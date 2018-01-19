@@ -1,1 +1,3 @@
-# gcluster
+# PASCAL
+
+PArallelized keyphraSes Clustering ALgorithm
