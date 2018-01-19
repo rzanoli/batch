@@ -1,3 +1,3 @@
-# PASCAL
+# fresco
 
-PArallelized keyphraSes Clustering ALgorithm
+Fbk keyphRasES Clustering algOrithm
