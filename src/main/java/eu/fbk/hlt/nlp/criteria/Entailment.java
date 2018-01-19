@@ -2,24 +2,40 @@ package eu.fbk.hlt.nlp.criteria;
 
 import eu.fbk.hlt.nlp.gcluster.Keyphrase;
 
-//import org.easyrules.annotation.Condition;
-//import org.easyrules.annotation.Rule;
-
 
 /*
 * 
-* Entailment
-* check if two variants have the same semantic head and one has just one token less
-* e.g. Fondazione Kessler for Fondazione, Bernardo Magnini for Magnini
+* Criteria: Entailment
+* 
+* 
+* Definition (2017-11-22):
+
+* Check if two variants have the same semantic head and one has just one token less
+* 
+* 
+* E.g.,
+* 
+* Fondazione Kessler for Fondazione, Bernardo Magnini for Magnini
 * ufficio italiano del Consorzio for ufficio italiano (not for the first version because it is two tokens less)
+* Magnini for Bernardo Magnini (not  in Roberto’s first version because named entities follow the same rule as all other KPs)
 *
 */
-//@Rule(name = "9", description = "Entailment")
 public class Entailment {
 	
+	// the criteria id
 	public static final int id = 9;
+	// the criteria description
 	public static final  String description = "Entailment";
 	
+	/**
+	 * Given a keyphrase kx1, can the keyphrase kx2 be derived from kx1?
+	 * 
+	 * @param kx1
+	 *            the keyphrase kx1
+	 * @param kx2
+	 *            the keyphrase kx2
+	 * @return if kx2 can be derived from kx1
+	 */
 	public static boolean evaluate(Keyphrase kx1, Keyphrase kx2) {
 		
 		if (kx1.length() != kx2.length() + 1)

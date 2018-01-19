@@ -3,14 +3,17 @@ package eu.fbk.hlt.nlp.gcluster;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -19,14 +22,27 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-public class Runner {
+import eu.fbk.hlt.nlp.criteria.Abbreviation;
+import eu.fbk.hlt.nlp.criteria.Acronym;
+import eu.fbk.hlt.nlp.criteria.Entailment;
+
+/**
+ * This class represents the entry point to the application to cluster
+ * keyphrases. It runs a certain number of processes (Comparator) to compare the
+ * keyphrases in input each other and build the disconnected graphs (clusters).
+ * After that it saves the produced clusters into the disk.
+ * 
+ * @author rzanoli
+ *
+ */
+public class Launcher {
 
 	// the logger
-	private static final Logger LOGGER = Logger.getLogger(Runner.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(Launcher.class.getName());
 
 	// this variable is used to terminate the threads
 	private static AtomicBoolean interrupted;
-	// private static Thread mRetweetThread = null;
+	// the list of running threads that compare the keyphrases in input
 	private List<Thread> threads;
 	private static int numberOfThreads = 8;
 
@@ -35,7 +51,7 @@ public class Runner {
 	 *
 	 * @param configFileName
 	 */
-	public Runner() {
+	public Launcher() {
 
 		try {
 
@@ -59,7 +75,7 @@ public class Runner {
 			@Override
 			public void run() {
 
-				System.out.println("Shutting down...");
+				LOGGER.info("Shutting down...");
 
 				try {
 
@@ -71,7 +87,7 @@ public class Runner {
 							thread.join();
 							// System.out.println("Monitor Follow/Unfollow
 							// actions stopped.");
-							System.out.println("Combinator i:" + i + " stopped.");
+							LOGGER.info("Comparator i:" + i + " stopped.");
 						}
 					}
 
@@ -79,9 +95,6 @@ public class Runner {
 					e.printStackTrace();
 					LOGGER.severe(e.getMessage());
 				}
-
-				// System.out.println("done.");
-				LOGGER.info("done.");
 
 			}
 		});
@@ -92,97 +105,197 @@ public class Runner {
 
 	public static void main(String[] args) {
 
+		// the directory containing the keyphrases produced by KD
 		String dirIn = args[0];
+		// the directory containing the produced clusters of keyphrases
 		String dirOut = args[1];
+		// init the launcher
+		Launcher launcher = new Launcher();
+		// attach Shut Down Hook
+		launcher.attachShutDownHook();
 
-		Runner runner = new Runner();
-		runner.attachShutDownHook();
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("Loading keyphrases...");
+		// load the the keyphrases produced by KD
+		Keyphrases keyphrases = launcher.readKeypharses(dirIn);
+		long endTime_1 = System.currentTimeMillis();
 
-		Keyphrases keyphrases = runner.readKeypharses(dirIn);
-
+		LOGGER.info("Initializing graph data structure...");
+		// init the graph structure containing the disconnected graphs (clusters)
 		Graph graph = new Graph(keyphrases.size());
 
-		// graph.printAdjacencyList();
-
-		// add the threads
-		runner.threads = new ArrayList<Thread>(numberOfThreads);
+		// add the threads to compare the keyphrases in input and build the graph
+		launcher.threads = new ArrayList<Thread>(numberOfThreads);
 		for (int i = 0; i < numberOfThreads; i++) {
 			// start the monitor for storing tweets written by the
 			// account
-			Thread thread = new Thread(new Comparator(i, interrupted, keyphrases, graph));
-			runner.threads.add(thread);
+			Thread thread = new Thread(new Comparator(interrupted, keyphrases, graph));
+			launcher.threads.add(thread);
 		}
 		// start the threads
-		for (int i = 0; i < runner.threads.size(); i++) {
-			Thread thread = runner.threads.get(i);
+		for (int i = 0; i < launcher.threads.size(); i++) {
+			Thread thread = launcher.threads.get(i);
 			thread.start();
+			LOGGER.info("Comparator i:" + i + " started.");
 		}
-
+		// let all threads finish execution before finishing main thread
 		try {
-			// let all threads finish execution before finishing main thread
-			for (int i = 0; i < runner.threads.size(); i++) {
-				Thread thread = runner.threads.get(i);
+			for (int i = 0; i < launcher.threads.size(); i++) {
+				Thread thread = launcher.threads.get(i);
 				thread.join();
 			}
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
 			LOGGER.severe(e.getMessage());
 		}
+		long endTime_2 = System.currentTimeMillis();
 
+		// print the graph
 		// graph.printAdjacencyList();
-		String graphs = graph.BFS(0);
-		//LOGGER.info("\n" + graphs + "============================");
-		
 
-		runner.printGraphs(graphs, keyphrases, dirOut);
-		
-		runner.getStatistics(graphs);
-		
+		LOGGER.info("Printing the clusters...");
+		// get the graph
+		String graphs = graph.BFS(0);
+		// LOGGER.info("\n" + graphs + "============================");
+		// and print the disconnected graphs (cluster) as single xml files
+		launcher.printGraphs(graphs, keyphrases, dirOut);
+		long endTime_3 = System.currentTimeMillis();
+
+		// print some statistics
+		String graphStatistic = launcher.getGraphStatistics(graphs);
+
+		String report = "\nReport:" + new Date();
+		File file = new File(dirOut);
+		report = report + "\n\n" + "System Info\n";
+		report = report + "===========\n";
+		report = report + "#thread: " + Launcher.numberOfThreads + "\n";
+		report = report + "#documents: " + (new File(dirIn)).listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File pathname) {
+				return pathname.getName().toLowerCase().endsWith(".tsv");
+			}
+		}).length + "\n";
+		report = report + "#keyphrases: " + keyphrases.nKephrases() + " (unique:" + keyphrases.size() + ")\n";
+		report = report + "Reading keyphrases: " + (endTime_1 - startTime) + " [ms]\n";
+		report = report + "Bulding garphs: " + (endTime_2 - endTime_1) + " [ms]\n";
+		report = report + "Writing graphs: " + (endTime_3 - endTime_2) + " [ms]\n";
+		report = report + "Total elapsed time: " + (endTime_3 - startTime) + " [ms]\n";
+		report = report + "\n" + "Graph statistics\n";
+		report = report + "================\n";
+		report = report + graphStatistic;
+		System.out.println(report);
+		// System.out.println(keyphrases.cursor);
+
 	}
-	
-	private void getStatistics(String graphs) {
-		
-		String result = "";
+
+	public void saveReport(String report, File fileName) {
+
+		BufferedWriter bw = null;
+		FileWriter fw = null;
+
+		try {
+
+			fw = new FileWriter(fileName);
+			bw = new BufferedWriter(fw);
+			bw.write(report);
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		} finally {
+
+			try {
+
+				if (bw != null)
+					bw.close();
+
+				if (fw != null)
+					fw.close();
+
+			} catch (IOException ex) {
+
+				ex.printStackTrace();
+
+			}
+
+		}
+
+	}
+
+	/**
+	 * Get some graph statistics
+	 * 
+	 * e
+	 */
+	private String getGraphStatistics(String graphs) {
+
+		StringBuffer result = new StringBuffer();
+
 		String[] splitGraphs = graphs.split("\n");
 		int nNodes = 0;
+		int nTotNodes = 0;
 		int nGraphs = 0;
 		int nRoots = 0;
-		Map<Integer,Integer> nodeDistribution = new TreeMap<Integer,Integer>();
+		int abbreviation = 0;
+		int entailment = 0;
+		int acronym = 0;
+		Map<Integer, Integer> nodeDistribution = new TreeMap<Integer, Integer>();
 		for (int i = 0; i < splitGraphs.length; i++) {
+			System.out.println(splitGraphs[i]);
 			String[] splitLine = splitGraphs[i].split(" ");
 			if (splitGraphs[i].equals("")) {
 				nGraphs++;
-				if(nodeDistribution.containsKey(nNodes)) {
+				if (nodeDistribution.containsKey(nNodes)) {
 					int freq = nodeDistribution.get(nNodes);
 					freq++;
 					nodeDistribution.put(nNodes, freq);
-				}
-				else
+				} else
 					nodeDistribution.put(nNodes, 1);
 				nNodes = 0;
-			}  
-			else if (splitLine.length == 2) {
+			} else if (splitLine.length == 2) {
 				nNodes++;
+				nTotNodes++;
 				nRoots++;
-			}
-			else if (splitLine.length <= 1) {
+			} else if (splitLine.length <= 1) {
 				nNodes++;
+				nTotNodes++;
+			} else {
+				if (Integer.parseInt(splitLine[2]) == Abbreviation.id)
+					abbreviation++;
+				else if (Integer.parseInt(splitLine[2]) == Acronym.id)
+					acronym++;
+				else if (Integer.parseInt(splitLine[2]) == Entailment.id)
+					entailment++;
 			}
 		}
-		
-		LOGGER.info("nRoots:" + nRoots + "\t" + "nGraphs:" + nGraphs);
+
+		result.append("#Graphs (clusters) produced: " + nRoots + "\n");
+		result.append("#Vertices: " + nTotNodes + "\n");
+		result.append("#Edges: " + (abbreviation + acronym + entailment) + " (abbreviation:" + abbreviation + " "
+				+ "acronym:" + acronym + " entailment:" + entailment + ")" + "\n");
+
+		result.append("\n\tDistribution (#graphs with #Vertices):\n");
 		Iterator<Integer> it = nodeDistribution.keySet().iterator();
-		StringBuffer stat = new StringBuffer();
-		while(it.hasNext()) {
+		while (it.hasNext()) {
 			int key = it.next();
 			int value = nodeDistribution.get(key);
-			stat.append(key + "\t" + value + "\n");
+			result.append("\t" + value + "\t" + key + "\n");
 		}
-		LOGGER.info("\n" + stat.toString());
-		
+
+		return result.toString();
+
 	}
 
+	/**
+	 * Print the disconnected graphs (clusters) into files
+	 * 
+	 * @param graphs
+	 *            the graph containing the disconnected graphs (clusters)
+	 * @param keyphrases
+	 *            the list of keyphrases in input
+	 * @param dirOut
+	 *            the directory to store output xml files
+	 */
 	private void printGraphs(String graphs, Keyphrases keyphrases, String dirOut) {
 
 		StringBuffer out = new StringBuffer();
@@ -234,6 +347,13 @@ public class Runner {
 
 	}
 
+	/**
+	 * Read the keyphrases produced by KD
+	 * 
+	 * @param dirName
+	 *            the directory containing the files produced by KD
+	 * @return the list of keyphrases
+	 */
 	private Keyphrases readKeypharses(String dirName) {
 
 		Keyphrases keyphrases = new Keyphrases();
@@ -241,13 +361,10 @@ public class Runner {
 		File dir = new File(dirName);
 		File[] files = dir.listFiles();
 
-		//int counter = 0;
-		
 		for (File file : files) {
 
 			if (file.isFile()) {
 				if (file.getName().endsWith(".tsv")) {
-					System.out.println(file.getName());
 					Map<String, Keyphrase> kxs = readFile(file);
 					Iterator<String> it = kxs.keySet().iterator();
 					while (it.hasNext()) {
@@ -256,20 +373,24 @@ public class Runner {
 						keyphrases.add(kxID, kx);
 					}
 				}
-				//counter++;
-				//if (counter > 40)
-					//break;
 			}
 
 		}
 
-		LOGGER.info("Keyphrases found:" + keyphrases.nKephrases());
-		LOGGER.info("Unique keyphrases found:" + keyphrases.size());
+		System.out.println();
 
 		return keyphrases;
 
 	}
 
+	/**
+	 * Read the file produced by KD and containing the keyphrases of the current
+	 * document.
+	 * 
+	 * @param file
+	 *            the file containing the keyphrases
+	 * @return the index of the keyword in input with their ids
+	 */
 	private Map<String, Keyphrase> readFile(File file) {
 
 		Map<String, Keyphrase> result = new HashMap<String, Keyphrase>();
