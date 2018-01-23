@@ -2,9 +2,15 @@ package eu.fbk.hlt.nlp.criteria;
 
 import java.util.Scanner;
 
-import eu.fbk.hlt.nlp.gcluster.Keyphrase;
+import eu.fbk.hlt.nlp.cluster.Keyphrase;
 
-
+/**
+ * This class can be used to test the implemented criteria from
+ * the command line.
+ * 
+ * @author rzanoli
+ *
+ */
 public class Launcher {
 
 	private static Launcher instance;

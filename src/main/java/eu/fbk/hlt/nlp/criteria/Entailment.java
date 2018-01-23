@@ -1,6 +1,6 @@
 package eu.fbk.hlt.nlp.criteria;
 
-import eu.fbk.hlt.nlp.gcluster.Keyphrase;
+import eu.fbk.hlt.nlp.cluster.Keyphrase;
 
 
 /*
