@@ -25,12 +25,7 @@ The jar file containing all the Java code can be download from this address:
 
 
 ### Dataset format
-
-
-
-## CLI Instructions
-
-After getting the Jar Distribution as explained above, you are ready for running the clustering algorithm on a dataset.
+to do
 
 ### Installation
 
