@@ -1,4 +1,4 @@
-package eu.fbk.hlt.nlp.gcluster;
+package eu.fbk.hlt.nlp.cluster;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,7 +29,7 @@ import eu.fbk.hlt.nlp.criteria.Entailment;
 /**
  * This class represents the entry point to the application to cluster
  * keyphrases. It runs a certain number of processes (Comparator) to compare the
- * keyphrases in input each other and build the disconnected graphs (clusters).
+ * keyphrases in input each other and builds the disconnected graphs (clusters).
  * After that it saves the produced clusters into the disk.
  * 
  * @author rzanoli
@@ -160,9 +160,10 @@ public class Launcher {
 		launcher.printGraphs(graphs, keyphrases, dirOut);
 		long endTime_3 = System.currentTimeMillis();
 
-		// print some statistics
+		// print some graph statistics
 		String graphStatistic = launcher.getGraphStatistics(graphs);
 
+		// prepare the report
 		String report = "\nReport:" + new Date();
 		File file = new File(dirOut);
 		report = report + "\n\n" + "System Info\n";
@@ -187,6 +188,14 @@ public class Launcher {
 
 	}
 
+	/**
+	 * Save the report into disk
+	 * 
+	 * @param report
+	 *            the report
+	 * @param fileName
+	 *            the file where write the report
+	 */
 	public void saveReport(String report, File fileName) {
 
 		BufferedWriter bw = null;
@@ -234,17 +243,14 @@ public class Launcher {
 		String[] splitGraphs = graphs.split("\n");
 		int nNodes = 0;
 		int nTotNodes = 0;
-		int nGraphs = 0;
 		int nRoots = 0;
 		int abbreviation = 0;
 		int entailment = 0;
 		int acronym = 0;
 		Map<Integer, Integer> nodeDistribution = new TreeMap<Integer, Integer>();
 		for (int i = 0; i < splitGraphs.length; i++) {
-			System.out.println(splitGraphs[i]);
 			String[] splitLine = splitGraphs[i].split(" ");
 			if (splitGraphs[i].equals("")) {
-				nGraphs++;
 				if (nodeDistribution.containsKey(nNodes)) {
 					int freq = nodeDistribution.get(nNodes);
 					freq++;
@@ -252,14 +258,14 @@ public class Launcher {
 				} else
 					nodeDistribution.put(nNodes, 1);
 				nNodes = 0;
-			} else if (splitLine.length == 2) {
+			} else if (splitLine.length == 2) { //root vertex
 				nNodes++;
 				nTotNodes++;
 				nRoots++;
-			} else if (splitLine.length <= 1) {
+			} else if (splitLine.length <= 1) { //vertices
 				nNodes++;
 				nTotNodes++;
-			} else {
+			} else { // edges
 				if (Integer.parseInt(splitLine[2]) == Abbreviation.id)
 					abbreviation++;
 				else if (Integer.parseInt(splitLine[2]) == Acronym.id)
@@ -268,13 +274,19 @@ public class Launcher {
 					entailment++;
 			}
 		}
+		if (nodeDistribution.containsKey(nNodes)) {
+			int freq = nodeDistribution.get(nNodes);
+			freq++;
+			nodeDistribution.put(nNodes, freq);
+		} else
+			nodeDistribution.put(nNodes, 1);
 
 		result.append("#Graphs (clusters) produced: " + nRoots + "\n");
 		result.append("#Vertices: " + nTotNodes + "\n");
 		result.append("#Edges: " + (abbreviation + acronym + entailment) + " (abbreviation:" + abbreviation + " "
 				+ "acronym:" + acronym + " entailment:" + entailment + ")" + "\n");
 
-		result.append("\n\tDistribution (#graphs with #Vertices):\n");
+		result.append("\n\tDistribution (#Graphs with #Vertices):\n");
 		Iterator<Integer> it = nodeDistribution.keySet().iterator();
 		while (it.hasNext()) {
 			int key = it.next();
@@ -302,8 +314,9 @@ public class Launcher {
 		int nNodes = 0;
 		String[] splitGraphs = graphs.split("\n");
 		int graphCounter = 0;
-		for (int i = 0; i < splitGraphs.length; i++) {
-			if (splitGraphs[i].equals("")) {
+		for (int i = 0; i <= splitGraphs.length; i++) {
+			// System.out.println("======" + splitGraphs[i]);
+			if (i == splitGraphs.length || splitGraphs[i].equals("")) {
 				try {
 					Writer writer = new OutputStreamWriter(new FileOutputStream(dirOut + "/" + graphCounter + ".xml"),
 							"UTF-8");
@@ -324,24 +337,26 @@ public class Launcher {
 			String[] splitLine = splitGraphs[i].split(" ");
 			if (splitLine.length == 1) {
 				nNodes++;
-				Keyphrase kx = keyphrases.get(Integer.parseInt(splitLine[0]));
-				out.append(" <node id=\"" + kx.getId() + "\" root=\"false\">\n");
+				int kxID = Integer.parseInt(splitLine[0]);
+				Keyphrase kx = keyphrases.get(kxID);
+				out.append(" <node id=\"" + kxID + "\" root=\"false\">\n");
 				out.append("  <text>" + kx.getText() + "</text>\n");
 				out.append("  <ids>" + keyphrases.getIDs(kx) + "</ids>\n");
 				out.append(" </node>\n");
 			} else if (splitLine.length == 2) {
 				nNodes++;
-				Keyphrase kx = keyphrases.get(Integer.parseInt(splitLine[0]));
-				out.append(" <node id=\"" + kx.getId() + "\" root=\"true\">\n");
+				int kxID = Integer.parseInt(splitLine[0]);
+				Keyphrase kx = keyphrases.get(kxID);
+				out.append(" <node id=\"" + kxID + "\" root=\"true\">\n");
 				out.append("  <text>" + kx.getText() + "</text>\n");
 				out.append("  <ids>" + keyphrases.getIDs(kx) + "</ids>\n");
 				out.append(" </node>\n");
 			} else {
-				Keyphrase kxSource = keyphrases.get(Integer.parseInt(splitLine[0]));
-				Keyphrase kxTarget = keyphrases.get(Integer.parseInt(splitLine[1]));
+				Keyphrase kxSourceID = keyphrases.get(Integer.parseInt(splitLine[0]));
+				Keyphrase kxTargetID = keyphrases.get(Integer.parseInt(splitLine[1]));
 				String relationRole = splitLine[2];
-				out.append(" <edge relation_role=\"" + relationRole + "\" source=\"" + kxSource.getId() + "\" "
-						+ "target=\"" + kxTarget.getId() + "\"/>\n");
+				out.append(" <edge relation_role=\"" + relationRole + "\" source=\"" + kxSourceID + "\" " + "target=\""
+						+ kxTargetID + "\"/>\n");
 			}
 		}
 
@@ -377,8 +392,6 @@ public class Launcher {
 
 		}
 
-		System.out.println();
-
 		return keyphrases;
 
 	}
@@ -389,7 +402,7 @@ public class Launcher {
 	 * 
 	 * @param file
 	 *            the file containing the keyphrases
-	 * @return the index of the keyword in input with their ids
+	 * @return the index of the keyphrases in input with their ids
 	 */
 	private Map<String, Keyphrase> readFile(File file) {
 

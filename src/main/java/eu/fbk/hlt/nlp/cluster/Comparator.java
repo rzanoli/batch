@@ -1,4 +1,4 @@
-package eu.fbk.hlt.nlp.gcluster;
+package eu.fbk.hlt.nlp.cluster;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -75,17 +75,23 @@ public class Comparator implements Runnable {
 
 				Keyphrase kx_i = kxs.get(i);
 				Keyphrase kx_j = kxs.get(j);
+				
+				//System.out.println("confronto:" + i + ":" + j + "\t" + kx_i.getText() + "-->" + kx_j.getText());
+				
 				// apply the Abbreviation criteria
 				if (Abbreviation.evaluate(kx_i, kx_j)) {
-					graph.add(kx_i.getId(), kx_j.getId(), Abbreviation.id);
+					graph.add(i, j, Abbreviation.id);
+					//System.out.println(Abbreviation.description);
 				}
 				// apply the Acronym criteria
 				else if (Acronym.evaluate(kx_i, kx_j)) {
-					graph.add(kx_i.getId(), kx_j.getId(), Acronym.id);
+					graph.add(i, j, Acronym.id);
+					//System.out.println(Acronym.description);
 				}
 				// apply the Entailment criteria
 				else if (Entailment.evaluate(kx_i, kx_j)) {
-					graph.add(kx_i.getId(), kx_j.getId(), Entailment.id);
+					graph.add(i, j, Entailment.id);
+					//System.out.println(Entailment.description);
 				}
 
 			}

@@ -1,4 +1,8 @@
-package eu.fbk.hlt.nlp.gcluster;
+package eu.fbk.hlt.nlp.cluster;
+
+import java.util.Arrays;
+
+import eu.fbk.hlt.nlp.criteria.Equality;
 
 /**
  * KeyPhrases are expressions contained in a document which help understand and
@@ -25,7 +29,7 @@ package eu.fbk.hlt.nlp.gcluster;
  */
 public class Keyphrase {
 
-	private int id;
+	//private int id;
 	private Token[] tokens;
 	private String text;
 
@@ -56,11 +60,11 @@ public class Keyphrase {
 	 * @param id
 	 *            the keyphrase id
 	 */
-	public void setID(int id) {
-
-		this.id = id;
-
-	}
+	//public void setIkD(int id) {
+	//
+	//	this.id = id;
+	//
+	//}
 
 	/**
 	 * Get the keyphrase length calculated as a number of its tokens.
@@ -98,11 +102,11 @@ public class Keyphrase {
 	 * 
 	 * @return the keyphrase id
 	 */
-	public int getId() {
-
-		return this.id;
-
-	}
+	//public int getID() {
+	//
+	//	return this.id;
+	//
+	//}
 
 	/**
 	 * Get the keyphrase text
@@ -124,6 +128,7 @@ public class Keyphrase {
 		if (obj == this)
 			return true;
 		return this.text.equals(((Keyphrase) obj).text);
+		//return Equality.evaluate(this, (Keyphrase) obj);
 
 	}
 
@@ -131,6 +136,7 @@ public class Keyphrase {
 	public int hashCode() {
 
 		return text.hashCode();
+		//return Arrays.hashCode(tokens);
 
 	}
 

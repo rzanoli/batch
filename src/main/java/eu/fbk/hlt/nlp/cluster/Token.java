@@ -1,9 +1,19 @@
-package eu.fbk.hlt.nlp.gcluster;
+package eu.fbk.hlt.nlp.cluster;
 
+/**
+ * 
+ * This class represents a token of a keyphrase
+ * 
+ * @author rzanoli
+ *
+ */
 public class Token {
 	
+	// the content
 	private String str;
+	// the number of its characters
 	private int characters;
+	// if it is  an abbreviation
 	private boolean isAbbreviation;
 	
 	public Token(String str) {
@@ -24,30 +34,57 @@ public class Token {
 		
 	}
 	
+	/**
+	 * Get the text of the token
+	 * 
+	 * @return
+	 */
 	public String getText() {
 		
 		return this.str;
 		
 	}
 	
+	/**
+	 * Get the token length
+	 * 
+	 * @return
+	 */
 	public int length() {
 		
 		return this.str.length();
 		
 	}
 	
+	/**
+	 * Get the number of character of the token
+	 * 
+	 * @return
+	 */
 	public int characters() {
 		
 		return this.characters;
 		
 	}
 	
+	/**
+	 * Get the character at position index
+	 * 
+	 * @param index the position of the character in the token
+	 * 
+	 * @return the character 
+	 */
 	public char charAt(int index) {
 		
 		return this.str.charAt(index);
 		
 	}
 	
+	/**
+	 * Get the first character of the token
+	 * 
+	 * @return the first character
+	 */
 	public char startWith() {
 		
 		return this.str.charAt(0);
@@ -71,7 +108,14 @@ public class Token {
 		
 	}
 	
-	
+	/**
+	 * If the current token is an abbreviation of the given token
+	 * in input.
+	 * 
+	 * @param token
+	 * 
+	 * @return true if it is an abbreviation of the token in input; false otherwise
+	 */
 	public boolean isAbbreviationOf(Token token) {
 		
 		if (isAbbreviation == false || 
@@ -115,7 +159,13 @@ public class Token {
 		
 	}
 	
-	
+	/**
+	 * If the current token is equal to the token in input
+	 * 
+	 * @param token
+	 * 
+	 * @return true if it is equal to the token in input; false otherwise
+	 */
 	public boolean equals( Token token ) {
 		
 		if( this.characters != token.characters ||
