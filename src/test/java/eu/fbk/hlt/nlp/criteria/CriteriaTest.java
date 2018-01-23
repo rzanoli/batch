@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import eu.fbk.hlt.nlp.gcluster.Keyphrase;
+import eu.fbk.hlt.nlp.cluster.Keyphrase;
 
 public class CriteriaTest {
 
@@ -71,6 +71,17 @@ public class CriteriaTest {
 		Keyphrase kx2 = new Keyphrase(str2);
 		boolean result = Acronym.evaluate(kx1, kx2);
 		final boolean expected = false;
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void acronym4Test() {
+		final String str2 = "fem";
+		final String str1 = "fondazione edmund mach";
+		Keyphrase kx1 = new Keyphrase(str1);
+		Keyphrase kx2 = new Keyphrase(str2);
+		boolean result = Acronym.evaluate(kx1, kx2);
+		final boolean expected = true;
 		assertEquals(expected, result);
 	}
 
