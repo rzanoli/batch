@@ -29,7 +29,7 @@ to do
 
 ### Installation
 
-Save the Fresco jar file that you have just downaloded into your working directory.
+Save the FRESCO jar file that you have just downaloded into your working directory.
 
 ### Running the code
 
