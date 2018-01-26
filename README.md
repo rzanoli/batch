@@ -1,6 +1,6 @@
-# fresco
+# batch
 
-FRESCO (Fbk keyphRasES Clustering algOrithm) is an open source library for clustering keyphrases in documents. KeyPhrases are expressions contained in a document which help understand and summarize the content of that document. FRESCO has been designed to meet the following requirements:
+BATCH (fBk keyphrAses sofT Clustering algoritHm) is an open source library for clustering keyphrases in documents. KeyPhrases are expressions contained in a document which help understand and summarize the content of that document. BATCH has been designed to meet the following requirements:
 
 - Method: soft agglomerative clustering.
 - Efficiency: parallelized to exploit multi-core processors. 
@@ -29,7 +29,7 @@ to do
 
 ### Installation
 
-Save the FRESCO jar file that you have just downaloded into your working directory.
+Save the BATCH jar file that you have just downaloded into your working directory.
 
 ### Running the code
 
