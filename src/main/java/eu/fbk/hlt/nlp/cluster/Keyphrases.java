@@ -3,15 +3,21 @@ package eu.fbk.hlt.nlp.cluster;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 /**
@@ -29,25 +35,43 @@ public class Keyphrases {
 	private List<Keyphrase> innerList;
 	// it is used by the Comparator class to move to the next keyphrase to compare
 	public int cursor;
-	// the number of keyphrases in input
+	// the total number of keyphrases including duplicates
 	private int nKeyphrases;
+	// the offset pointer to the first place in the list after the last keyphrase
+	// it is used for incremental clustering so that
+	// comparators can compare the new keyphrases with the
+	// ones that were already analyzed in a previous run.
+	private int offset = 0;
 
 	/**
 	 * The constructor
 	 */
 	public Keyphrases() {
 
-		masterList = new LinkedHashMap<Keyphrase, List<String>>();
-		innerList = new ArrayList<Keyphrase>();
+		this.masterList = new LinkedHashMap<Keyphrase, List<String>>();
+		this.innerList = new ArrayList<Keyphrase>();
+		this.offset = 0;
 
 	}
-	
-	/**
-	 * The constructor
-	 */
-	public Keyphrases(File fileName) throws Exception {
 
-		loadMasterList(fileName);
+	/**
+	 * The constructor that initializes the list of keyphrases
+	 * with the keypharses saved in a previous run  of the system
+	 * and clustered by the clustering algorithm. It is used for
+	 * implementing incremental clustering where the algorithm
+	 * has to compare the new keyphrases to cluster with the ones
+	 * that have already been compared.
+	 * 
+	 * First of all it loads the master list from file that contains
+	 * the keypharses and the documents ids where they appear; then it
+	 * moves the offset pointer to the last keyphrase in the list.
+	 * 
+	 */
+	public Keyphrases(String fileName) throws Exception {
+
+		this();
+		load(fileName);
+		this.offset = masterList.size();
 
 	}
 
@@ -67,7 +91,7 @@ public class Keyphrases {
 			List<String> ids = new ArrayList<String>();
 			ids.add(id);
 			masterList.put(kx, ids);
-			//kx.setIkD(innerList.size());
+			// kx.setIkD(innerList.size());
 			innerList.add(kx);
 		} else {
 			List<String> ids = masterList.get(kx);
@@ -87,7 +111,7 @@ public class Keyphrases {
 	 */
 	public String getIDs(Keyphrase kx) {
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		for (String id : masterList.get(kx)) {
 			result.append(id);
 			result.append(" ");
@@ -111,13 +135,13 @@ public class Keyphrases {
 	}
 
 	/**
-	 * The size of the list containing the unique keyphrases
+	 * The size of the list containing the unique keyphrases 
 	 * 
 	 * @return the size
 	 */
 	public int size() {
 
-		return this.innerList.size();
+		return this.masterList.size();
 
 	}
 
@@ -126,10 +150,33 @@ public class Keyphrases {
 	 * 
 	 * @return the number of keyphrases
 	 */
-	public int nKephrases() {
+	public int totalSize() {
 
 		return this.nKeyphrases;
 
+	}
+
+	/**
+	 * Return the offset pointer to the first place in the list after
+	 * the last keyphrase.
+	 * 
+	 * @return the offset
+	 */
+	public int getOffset(int i) {
+
+		return this.offset;
+
+	}
+	
+	/**
+	 * Get an iterator to the list of the keyphrases
+	 * 
+	 * @return the iterator
+	 */
+	public Iterator<Keyphrase> iterator() {
+		
+		return this.masterList.keySet().iterator();
+		
 	}
 
 	/**
@@ -144,101 +191,209 @@ public class Keyphrases {
 		return cursor++;
 
 	}
-	
+
 	/**
 	 * Print the master list
 	 * 
+	 * @param fileName the file that will contain the master list
+	 * 
 	 */
-	public void saveMasterList(File fileName) throws Exception {
+	public void save(String fileName) throws Exception {
 
 		BufferedWriter bw = null;
-		FileWriter fw = null;
 
 		try {
 
-			fw = new FileWriter(fileName);
-			bw = new BufferedWriter(fw);
-		
+			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8"));
+
 			Iterator<Keyphrase> kx_it = masterList.keySet().iterator();
-			while(kx_it.hasNext()) {
+			int counter = 0;
+			while (kx_it.hasNext()) {
 				Keyphrase kx = kx_it.next();
 				String kxText = kx.getText();
-				bw.write(kxText + "\t");
+				bw.write(counter + "\t" + kxText + "\t");
 				List<String> ids = masterList.get(kx);
 				Iterator<String> id_it = ids.iterator();
-				while(id_it.hasNext())
+				while (id_it.hasNext())
 					bw.write(id_it.next() + " ");
 				bw.write("\n");
+				counter++;
 			}
-		
+
 		} finally {
 
 			if (bw != null)
 				bw.close();
 
-			if (fw != null)
-				fw.close();
-
 		}
 
 	}
-	
-	
+
 	/**
-	 * Print the inner list
+	 * Load the master list
+	 * 
+	 * @param fileName the file that contains the master list
 	 * 
 	 */
-	private String printInnerList() {
+	private void load(String fileName) throws Exception {
 
-		StringBuilder result = new StringBuilder();
-		
-		Iterator<Keyphrase> kx_it = innerList.iterator();
-		while(kx_it.hasNext()) {
-		    Keyphrase kx = kx_it.next();
-		    String kxText = kx.getText();
-			result.append(kxText + "\n");
-		}
-		
-		return result.toString();
-
-	}
-	
-	/**
-	 * Print the master list
-	 * 
-	 */
-	private void loadMasterList(File fileName) throws Exception {
-
-		masterList = new HashMap<Keyphrase, List<String>>();
-		
 		BufferedReader br = null;
-		FileReader fr = null;
-		
+
 		try {
 
-			fr = new FileReader(fileName);
-			br = new BufferedReader(fr);
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF8"));
 
 			String line;
 
 			while ((line = br.readLine()) != null) {
 				String[] splitLine = line.split("\t");
-				String kxText = splitLine[0];
+				String kxText = splitLine[1];
 				Keyphrase kx = new Keyphrase(kxText);
-				String[] ids = splitLine[1].split(" ");
+				String[] ids = splitLine[2].split(" ");
 				for (int i = 0; i < ids.length; i++)
 					add(ids[i], kx);
 			}
 
 		} finally {
 
-				if (br != null)
-					br.close();
+			if (br != null)
+				br.close();
 
-				if (fr != null)
-					fr.close();
-			
 		}
+
+	}
+
+	/**
+	 * Get some statistics about the keyphrases, e.g., number, length, ..
+	 * 
+	 * @param keyphrases the keyphrases to get statistics from
+	 * 
+	 * @return the statistics
+	 */
+	public static String getStatistics(Keyphrases keyphrases) {
+
+		StringBuilder result = new StringBuilder();
+
+		result.append("#keyphrases:" + keyphrases.totalSize() + " (unique:" + keyphrases.size() + ")\n\n");
+
+		Map<Integer, Integer> lengthDistribution = new TreeMap<Integer, Integer>(); // keywords length occurrences
+		Map<Integer, Integer> documentsDistribution = new TreeMap<Integer, Integer>(); // documents keywords occurrences
+		Iterator<Keyphrase> it = keyphrases.iterator();
+		while (it.hasNext()) {
+
+			Keyphrase kx = it.next();
+			int kxLength = kx.length();
+			if (lengthDistribution.containsKey(kxLength)) {
+				int value = lengthDistribution.get(kxLength);
+				value++;
+				lengthDistribution.put(kxLength, value);
+			} else {
+				int value = 1;
+				lengthDistribution.put(kxLength, value);
+			}
+
+			int nDocuments = keyphrases.getIDs(kx).split(" ").length;
+			if (documentsDistribution.containsKey(nDocuments)) {
+				int value = documentsDistribution.get(nDocuments);
+				value++;
+				documentsDistribution.put(nDocuments, value);
+			} else {
+				int value = 1;
+				documentsDistribution.put(nDocuments, value);
+			}
+
+		}
+
+		result.append("Length distribution (Length, #Occurrences):\n");
+		Iterator<Integer> lengthDistributionIt = lengthDistribution.keySet().iterator();
+		while (lengthDistributionIt.hasNext()) {
+			int length = lengthDistributionIt.next();
+			int frequency = lengthDistribution.get(length);
+			result.append("\t" + length + "\t" + frequency + "\n");
+		}
+
+		result.append("\nDocuments distribution (#Documents, #Keyphrases):\n");
+		Iterator<Integer> documentsDistributionIt = documentsDistribution.keySet().iterator();
+		while (documentsDistributionIt.hasNext()) {
+			int number = documentsDistributionIt.next();
+			int frequency = documentsDistribution.get(number);
+			result.append("\t" + number + "\t" + frequency + "\n");
+		}
+
+		return result.toString();
+
+	}
+
+	/**
+	 * Load the keyphrases produced by KD
+	 * 
+	 * @param dirName
+	 *            the directory containing the files produced by KD
+	 * 
+	 */
+	public void read(String dirName) throws Exception {
+
+		File dir = new File(dirName);
+		File[] files = dir.listFiles();
+
+		for (File file : files) {
+
+			if (file.isFile()) {
+				if (file.getName().endsWith(".tsv")) {
+					Map<String, Keyphrase> kxs = readKDFiles(file);
+					Iterator<String> it = kxs.keySet().iterator();
+					while (it.hasNext()) {
+						String kxID = it.next();
+						Keyphrase kx = kxs.get(kxID);
+						add(kxID, kx);
+					}
+				}
+			}
+
+		}
+
+	}
+
+	/**
+	 * Read the file produced by KD and containing the keyphrases of the current
+	 * document.
+	 * 
+	 * @param file
+	 *            the file containing the keyphrases
+	 * @return the index of the keyphrases in input with their ids
+	 */
+	private static Map<String, Keyphrase> readKDFiles(File file) throws Exception {
+
+		Map<String, Keyphrase> result = new HashMap<String, Keyphrase>();
+
+		BufferedReader br = null;
+		String line = null;
+
+		try {
+
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
+
+			int lineNumber = 0;
+			while ((line = br.readLine()) != null) {
+
+				// System.out.println(sCurrentLine);
+				lineNumber++;
+				if (lineNumber == 1)
+					continue;
+
+				String[] splitLine = line.split("\t");
+				String kxID = file.getName() + "_" + Integer.parseInt(splitLine[0]);
+				String kxText = splitLine[1];
+				Keyphrase kx = new Keyphrase(kxText);
+				result.put(kxID, kx);
+
+			}
+		} finally {
+			if (br != null)
+				br.close();
+		}
+
+		return result;
 
 	}
 

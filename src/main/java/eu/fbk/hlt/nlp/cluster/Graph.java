@@ -3,15 +3,24 @@ package eu.fbk.hlt.nlp.cluster;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Vector;
+
+import eu.fbk.hlt.nlp.criteria.Abbreviation;
+import eu.fbk.hlt.nlp.criteria.Acronym;
+import eu.fbk.hlt.nlp.criteria.Entailment;
 
 /**
  * 
@@ -45,7 +54,7 @@ public class Graph {
 		}
 
 	}
-	
+
 	/**
 	 * The constructor
 	 * 
@@ -57,31 +66,31 @@ public class Graph {
 		loadAdjacencyList(fileName);
 
 	}
-	
+
 	/**
 	 * The constructor
 	 * 
-	 * Given a graph and a number of vertices that is >= to the number of vertices in such a graph
-	 * it return a new graph containing the given graph and whose size is >= to the graph in input.
-	 * It is used to create a new graph starting by a given graph and that contains more vertices
-	 * than the initial graph. 
+	 * Given a graph and a number of vertices that is >= to the number of vertices
+	 * in such a graph it return a new graph containing the given graph and whose
+	 * size is >= to the graph in input. It is used to create a new graph starting
+	 * by a given graph and that contains more vertices than the initial graph.
 	 * 
 	 * @param fileName
 	 *            the file containing the graph to load
 	 */
 	public Graph(int v, Graph graph) {
-		
+
 		this.v = v;
 		adj = new Vector[v];
 		for (int i = 0; i < v; i++) {
 			adj[i] = new Vector<int[]>();
 			// adj[i] = new Vector<Integer>();
 		}
-		
+
 		for (int i = 0; i < graph.v; i++) {
 			adj[i] = graph.adj[i];
 		}
-		
+
 	}
 
 	/**
@@ -109,11 +118,7 @@ public class Graph {
 	 * graph (clusters) with the given vertex source. The produced disconnected
 	 * graph is in a format like:
 	 * 
-	 * 1 1 
-	 * 2 
-	 * 3 
-	 * 1 2 0 
-	 * 2 3 1
+	 * 1 1 2 3 1 2 0 2 3 1
 	 * 
 	 * where rows containing numbers in a number <= 2 are vertices while rows
 	 * containing 3 numbers are edges between vertices.
@@ -128,9 +133,9 @@ public class Graph {
 	 * @param s
 	 *            the source vertex
 	 * @param visited
-	 *            the vertices that are part of a graph; this list will be used
-	 *            to remove from the output graph those graphs whose root vertex
-	 *            is part of another graph. 
+	 *            the vertices that are part of a graph; this list will be used to
+	 *            remove from the output graph those graphs whose root vertex is
+	 *            part of another graph.
 	 * 
 	 * @return
 	 */
@@ -138,7 +143,7 @@ public class Graph {
 
 		// mark all the vertices of the current graph as not visited
 		Set<Integer> visitedInCurrentGraph = new HashSet<Integer>();
-		
+
 		// the vertices of the disconnected graph
 		StringBuffer vertices = new StringBuffer();
 		// and its edges
@@ -150,7 +155,7 @@ public class Graph {
 		LinkedList<Integer> queue = new LinkedList<Integer>();
 		// mark the current vertex as visited and enqueue it
 		queue.add(s);
-		//visited[s] = true;
+		// visited[s] = true;
 		visitedInCurrentGraph.add(s);
 		while (queue.size() != 0) {
 			// dequeue a vertex from queue and print it
@@ -209,34 +214,34 @@ public class Graph {
 
 		// mark all the vertices as not visited; this list will be used
 		// to remove from the output graph those graphs whose root vertex
-		// is part of another graph. 
+		// is part of another graph.
 		boolean visited[] = new boolean[this.v];
 
 		// get all the disconnected graphs in the adjacency list
-		Map<Integer,String> disconnectedGraphs = new HashMap<Integer,String>();
+		Map<Integer, String> disconnectedGraphs = new HashMap<Integer, String>();
 		for (int i = 0; i < this.v; i++) {
 			if (visited[i] == false) {
 				String graph_i = BFSUtil(i, visited);
-				//System.out.println(graph_i);
+				// System.out.println(graph_i);
 				disconnectedGraphs.put(Integer.valueOf(i), graph_i);
 			}
 		}
-		
+
 		// among the disconnected graphs, it only considers the ones whose root vertex
 		// is not part of another graph.
 		Iterator<Integer> it = disconnectedGraphs.keySet().iterator();
-		while(it.hasNext()) {
+		while (it.hasNext()) {
 			int vertex = it.next();
 			if (visited[vertex] == false) {
 				graphsString.append(disconnectedGraphs.get(vertex));
 				graphsString.append("\n");
-				//System.out.println(graphsToPrint.get(vertex));
+				// System.out.println(graphsToPrint.get(vertex));
 			}
 		}
-		
-		//System.out.print(graphsString.toString());
-		//System.out.println("====================");
-		
+
+		// System.out.print(graphsString.toString());
+		// System.out.println("====================");
+
 		return graphsString.toString();
 
 	}
@@ -254,9 +259,9 @@ public class Graph {
 
 			fw = new FileWriter(fileName);
 			bw = new BufferedWriter(fw);
-		
+
 			bw.write(adj.length + "\n"); // number of vertices
-			
+
 			for (int i = 0; i < adj.length; i++) {
 				bw.write(i + "\t");
 				// Vector<Integer> list = adj[i];
@@ -266,7 +271,7 @@ public class Graph {
 					bw.write(list.get(j)[0] + "," + list.get(j)[1] + " ");
 				bw.write("\n");
 			}
-				
+
 		} finally {
 
 			if (bw != null)
@@ -278,16 +283,16 @@ public class Graph {
 		}
 
 	}
-	
+
 	/**
-	 * Load the Adjacency List 
+	 * Load the Adjacency List
 	 * 
 	 */
 	private void loadAdjacencyList(File fileName) throws Exception {
 
 		BufferedReader br = null;
 		FileReader fr = null;
-		
+
 		try {
 
 			fr = new FileReader(fileName);
@@ -298,38 +303,113 @@ public class Graph {
 			int lineCounter = 0;
 			while ((line = br.readLine()) != null) {
 				if (lineCounter == 0) {
+					v = Integer.parseInt(line);
 					adj = new Vector[v];
 					for (int i = 0; i < v; i++) {
 						adj[i] = new Vector<int[]>();
 						// adj[i] = new Vector<Integer>();
 					}
-				}
-				else {
+				} else {
 					String[] splitLine = line.split("\t");
 					int root = Integer.parseInt(splitLine[0]);
-					String[] vertices = splitLine[1].split(" ");
-					Vector<int[]> verticesList = adj[root];
-					for (int i = 0; i < vertices.length; i++) {
-						int[] vertexAndEdge = new int[2];
-						vertexAndEdge[0] = Integer.parseInt(vertices[i].split(",")[0]);
-						vertexAndEdge[1] = Integer.parseInt(vertices[i].split(",")[1]);
-						verticesList.add(vertexAndEdge);
+					
+					if (splitLine.length == 2) {
+						String[] vertices = splitLine[1].split(" ");
+						Vector<int[]> verticesList = adj[root];
+						for (int i = 0; i < vertices.length; i++) {
+							int[] vertexAndEdge = new int[2];
+							vertexAndEdge[0] = Integer.parseInt(vertices[i].split(",")[0]);
+							vertexAndEdge[1] = Integer.parseInt(vertices[i].split(",")[1]);
+							verticesList.add(vertexAndEdge);
+						}
 					}
+					
 				}
 				lineCounter++;
 			}
 
 		} finally {
 
-				if (br != null)
-					br.close();
+			if (br != null)
+				br.close();
 
-				if (fr != null)
-					fr.close();
-			
+			if (fr != null)
+				fr.close();
+
 		}
 
 	}
+
+	/**
+	 * Get some graph statistics
+	 * 
+	 * @graph the graph
+	 * 
+	 * @return the statistics
+	 */
+	public static String getGraphStatistics(String graph) {
+
+		StringBuffer result = new StringBuffer();
+
+		String[] splitGraphs = graph.split("\n");
+		int nNodes = 0;
+		int nTotNodes = 0;
+		int nRoots = 0;
+		int abbreviation = 0;
+		int entailment = 0;
+		int acronym = 0;
+		Map<Integer, Integer> nodeDistribution = new TreeMap<Integer, Integer>();
+		for (int i = 0; i < splitGraphs.length; i++) {
+			String[] splitLine = splitGraphs[i].split(" ");
+			if (splitGraphs[i].equals("")) {
+				if (nodeDistribution.containsKey(nNodes)) {
+					int freq = nodeDistribution.get(nNodes);
+					freq++;
+					nodeDistribution.put(nNodes, freq);
+				} else
+					nodeDistribution.put(nNodes, 1);
+				nNodes = 0;
+			} else if (splitLine.length == 2) { // root vertex
+				nNodes++;
+				nTotNodes++;
+				nRoots++;
+			} else if (splitLine.length <= 1) { // vertices
+				nNodes++;
+				nTotNodes++;
+			} else { // edges
+				if (Integer.parseInt(splitLine[2]) == Abbreviation.id)
+					abbreviation++;
+				else if (Integer.parseInt(splitLine[2]) == Acronym.id)
+					acronym++;
+				else if (Integer.parseInt(splitLine[2]) == Entailment.id)
+					entailment++;
+			}
+		}
+		if (nodeDistribution.containsKey(nNodes)) {
+			int freq = nodeDistribution.get(nNodes);
+			freq++;
+			nodeDistribution.put(nNodes, freq);
+		} else
+			nodeDistribution.put(nNodes, 1);
+
+		result.append("#Graphs (clusters) produced: " + nRoots + "\n");
+		result.append("#Vertices: " + nTotNodes + "\n");
+		result.append("#Edges: " + (abbreviation + acronym + entailment) + " (abbreviation:" + abbreviation + " "
+				+ "acronym:" + acronym + " entailment:" + entailment + ")" + "\n");
+
+		result.append("\nDistribution (#Graphs, #Vertices):\n");
+		Iterator<Integer> it = nodeDistribution.keySet().iterator();
+		while (it.hasNext()) {
+			int key = it.next();
+			int value = nodeDistribution.get(key);
+			result.append("\t" + value + "\t" + key + "\n");
+		}
+
+		return result.toString();
+
+	}
+
+	
 
 	public static void main(String[] args) {
 
@@ -343,8 +423,8 @@ public class Graph {
 
 		System.out.println("Following is Breadth First Traversal " + "(starting from vertex 0)");
 
-		//g.printAdjacencyList();
-		//System.out.println("========================");
+		// g.printAdjacencyList();
+		// System.out.println("========================");
 		String graphsString = g.BFS(0);
 		System.out.println(graphsString);
 	}
