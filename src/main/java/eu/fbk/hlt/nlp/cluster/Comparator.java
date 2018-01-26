@@ -72,7 +72,10 @@ public class Comparator implements Runnable {
 					j = 0;
 				if (j == i)// or Equality.evaluate(kx_i, kx_j)
 					break;
-
+				
+				if (i < kxs.getOffset(i) && j < kxs.getOffset(i))
+					continue;
+				
 				Keyphrase kx_i = kxs.get(i);
 				Keyphrase kx_j = kxs.get(j);
 				
