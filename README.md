@@ -12,8 +12,7 @@ BATCH has been designed to meet the following requirements:
 - Portability: written in Java to be portable across different platforms.
 - Simplicity:  implemented as a maven project to make it easy to install, configure and use. A Command Line Interface (CLI) is provided for convenience of experiments.
 
-
-Implemented keyphrases compatibility relations:
+keyphrases compatibility relations are used to specify that two keyphrases should be assigned into one cluster. The current implemented relations are:
 - Abbreviation: We consider an abbreviation any token which finishes with a dot and we check if it is a substring of some 
   token in another keyphrase; kj and ki must have the same number of tokens in the same order, one or more tokens 
   in kj can be the abbreviation of one or more tokens in ki.
