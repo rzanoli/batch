@@ -38,7 +38,7 @@ The jar file containing all the Java code can be download from this address:
 
 
 ### Dataset format
-to do
+to write...
 
 ### Installation
 
@@ -48,12 +48,13 @@ Save the BATCH jar file that you have just downaloded into your working director
 
 From your working directory, run the following command:
 
-```> ...```
+```>java -cp batch-0.0.1-SNAPSHOT-jar-with-dependencies.jar eu.fbk.hlt.nlp.cluster.Runner dirIn dirOut modelDir incremental```
 
 Where: 
-- dirIn
-- dirOut
-
+- dirIn is the directory containing the keyphrases produced by KD (https://dh.fbk.eu/technologies/kd) tool.
+- dirOut is the directory containing the produced clusters.
+- modelDir is the directory containing the produced graph and the keyphrases list in input that can be used in a second phase of incremental clustering.
+- incremental true for incramental clustering; false otherwise.
 
 ## Authors
 
