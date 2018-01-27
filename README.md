@@ -5,7 +5,7 @@ BATCH (fBk keyphrAses sofT Clustering algoritHm) is an open source library for c
 BATCH has been designed to meet the following requirements:
 
 - Method: 
-  -- soft agglomerative clustering.
+  - soft agglomerative clustering.
 -- constrained clustering
 Use must-link constraints (i.e., keyphrases compatibility relations) to specify that two Keyphrases in a must-link relation have to be associated with the same cluster
 -- Incremental Clustering New keyphrases added to the data collection without having to perform a full re-clustering
