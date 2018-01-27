@@ -5,15 +5,21 @@ BATCH (fBk keyphrAses sofT Clustering algoritHm) is an open source library for c
 BATCH has been designed to meet the following requirements:
 
 - Method: 
-  - soft agglomerative clustering.
--- constrained clustering
-Use must-link constraints (i.e., keyphrases compatibility relations) to specify that two Keyphrases in a must-link relation have to be associated with the same cluster
--- Incremental Clustering New keyphrases added to the data collection without having to perform a full re-clustering
+  - Soft agglomerative clustering: a keyphrase can belong to more than one cluster.
+  - Constrained clustering: use must-link constraints (i.e., keyphrases compatibility relations) to specify that two Keyphrases in a must-link relation have to be associated with the same cluster.
+  - Incremental clustering: new keyphrases added to the data collection without having to perform a full re-clustering
 - Efficiency: parallelized to exploit multi-core processors. 
 - Portability: written in Java to be portable across different platforms.
 - Simplicity:  implemented as a maven project to make it easy to install, configure and use. A Command Line Interface (CLI) is provided for convenience of experiments.
 
 
+Implemented keyphrases compatibility relations:
+- Abbreviation: We consider an abbreviation any token which finishes with a dot and we check if it is a substring of some 
+  token in another keyphrase; kj and ki must have the same number of tokens in the same order, one or more tokens 
+  in kj can be the abbreviation of one or more tokens in ki.
+- Acronym: kj and ki are variants if kj consists of one token of n>1 letters and ki consists of n tokens; the initials of the n tokens of ki are the letters composing the single token of kj in the same order.
+- Entailment: check if two variants have the same semantic head and one has just one token less.
+- Equality: kj and kl are equal (i.e. same tokens in the same order). This is a special case, as occurrences of the same keyphrase are not considered as different variants, rather we collapse them into a single keyphrase type.
 
 ## Getting started
 
