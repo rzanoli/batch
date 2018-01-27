@@ -33,7 +33,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 The jar file containing all the Java code can be download from this address: 
 
-...
+https://github.com/rzanoli/batch/releases/download/v0.1-alpha/batch-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 
 
 ### Dataset format
