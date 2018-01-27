@@ -54,7 +54,7 @@ Where:
 - dirIn is the directory containing the keyphrases produced by KD (https://dh.fbk.eu/technologies/kd) tool.
 - dirOut is the directory containing the produced clusters.
 - modelDir is the directory containing the produced graph and the keyphrases list in input that can be used in a second phase of incremental clustering.
-- incremental true for incramental clustering; false otherwise.
+- incremental true for incremental clustering; false otherwise.
 
 ## Authors
 
