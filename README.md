@@ -37,7 +37,18 @@ https://github.com/rzanoli/batch/releases/download/v0.1-alpha/batch-0.0.1-SNAPSH
 
 
 ### Dataset format
-to write...
+
+```
+rank    keyword synonyms        score   frequency
+1       ricorso abusivo al credito              23.702113582721168      2
+2       fascicolo               23.591343915003407      2
+3       chiarezza sui prospetti         19.96721317927301       1
+4       crac della banca                17.766248619607136      1
+5       fascicolo sulle obbligazioni            17.10372433919623       1
+6       grane giudiziarie               16.2332507011343        1
+7       ex consiglieri          14.139538077863026      1
+8      sindaci revisori                13.82010208421649       1
+```
 
 ### Installation
 
