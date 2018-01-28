@@ -38,9 +38,11 @@ https://github.com/rzanoli/batch/releases/download/v0.1-alpha/batch-0.0.1-SNAPSH
 
 ### Dataset format
 
+Files in input contain the keyphrases produced by KD (https://dh.fbk.eu/technologies/kd) tool, e.g.,
 ```
 rank    keyword synonyms        score   frequency
-1       ricorso abusivo al credito              23.702113582721168      2
+1       
+23.702113582721168      2
 2       fascicolo               23.591343915003407      2
 3       chiarezza sui prospetti         19.96721317927301       1
 4       crac della banca                17.766248619607136      1
@@ -48,6 +50,21 @@ rank    keyword synonyms        score   frequency
 6       grane giudiziarie               16.2332507011343        1
 7       ex consiglieri          14.139538077863026      1
 8      sindaci revisori                13.82010208421649       1
+```
+
+The output consists of xml files containing the produced clusters, e.g.,
+```
+<KEC_graph id="70370" node_count="2">
+ <node id="70370" root="true">
+  <text>crac della banca popolare</text>
+  <ids>9964011.txt.tsv_17</ids>
+ </node>
+ <node id="37975" root="false">
+  <text>crac della banca</text>
+  <ids>9792299.txt.tsv_16 9712787.txt.tsv_5 9794648.txt.tsv_20</ids>
+ </node>
+ <edge relation_role="9" source="70370" target="37975"/>
+</KEC_graph>
 ```
 
 ### Installation
