@@ -27,10 +27,15 @@ import eu.fbk.hlt.nlp.criteria.Acronym;
 import eu.fbk.hlt.nlp.criteria.Entailment;
 
 /**
- * This class represents the entry point to the application to cluster
- * keyphrases. It runs a certain number of processes (Comparator) to compare the
- * keyphrases in input each other and builds the disconnected graphs (clusters).
- * After that it saves the produced clusters into the disk.
+ * This class represents the entry point to the application of clustering keyphrases 
+ * (expressions which help understand and summarize the content of documents) in text documents. It uses 
+ * an algorithm based on graph connectivity for Cluster analysis, by first representing the similarity among 
+ * keyphrases in a similarity graph, and afterwards finding all the connected subgraphs (groups of keyphrases 
+ * that are connected to one another, but that have no connections to keyphrases outside the group) as clusters. 
+ * The algorithm does not make any prior assumptions on the number of the clusters.
+ * 
+ * Runner can create clusters starting from scratch or add new keyphrases to the data collection without having to 
+ * perform a full re-clustering.
  * 
  * @author rzanoli
  *
@@ -42,9 +47,9 @@ public class Runner {
 
 	// this variable is used to terminate the threads
 	private static AtomicBoolean interrupted;
-	// the list of running threads that compare the keyphrases in input
+	// the list of running threads (Comparator) that compare the keyphrases in input
 	private List<Thread> threads;
-	private static int numberOfThreads = 7;
+	private static int numberOfThreads = 8;
 
 	/**
 	 * The constructor
@@ -105,17 +110,34 @@ public class Runner {
 
 	public static void main(String[] args) {
 
-		// the directory containing the keyphrases produced by KD
-		String dirIn = args[0];
-		// the directory containing the produced clusters of keyphrases
-		String dirOut = args[1];
-		// the directory containing the graph (adjacency list) and the list of keyphrases
-		String graphDirectory = args[2];
-		// true if incremental clustering; false otherwise
-		boolean incrementalClastering = Boolean.parseBoolean(args[3]);
+		if (args.length != 3 && args.length != 4) {
+			System.out.println("Usage:\n");
+			System.out.println("java Runner dirIn dirOut graphDirectoryOut //clustering from scratch");
+			System.out.println("java Runner dirIn dirOut graphDirectoryIn graphDirectoryOut //incremental clustering");
+			System.out.println("\nWhere:\n" +
+					" dirIn: the directory containing the keyphrases produced by KD" +
+					" dirOut: the directory containing the produced clusters in xml format" +
+					" graphDirectoryOut: the directory containing the adjacency list of the produced graphs" +
+					" graphDirectoryIn: the directory containing the adjacency list of a previuous clusetring phase\n");
+			System.exit(1);
+		}
 		
 		// init the launcher
 		Runner launcher = new Runner();
+		
+		// the directory containing the keyphrases produced by KD
+		String dirIn = args[0];
+		if (launcher.checkDirectoryExists(dirIn) == false) {
+			System.err.println("The directory " + dirIn + " does not exist!");
+			System.exit(1);
+		}
+		// the directory containing the produced clusters of keyphrases in xml format
+		String dirOut = args[1];
+		if (launcher.checkDirectoryExists(dirOut) == false) {
+			System.err.println("The directory " + dirOut + " does not exist!");
+			System.exit(1);
+		}
+		
 		
 		try {
 
@@ -125,13 +147,31 @@ public class Runner {
 			long startTime = System.currentTimeMillis();
 			
 			Graph graph = null;
-			Keyphrases keyphrases;
+			Keyphrases keyphrases = null;
+			String adjacencyListFileName = "adjacencyList.txt";
+			String keyphrasesListFileName = "masterList.txt";
+			String graphDirectoryIn;
+			String graphDirectoryOut;
 			
 			// incremental clustering
-			if (incrementalClastering == true) {
-				File adjacencyList = new File(graphDirectory + "/Graph.txt");
-				String masterList = graphDirectory + "/Keyphrases.txt";
-				LOGGER.info("Loading keyphrases...");
+			if (args.length == 4) {
+				
+				// check if the given directories exist
+				graphDirectoryIn = args[2];
+				if (launcher.checkDirectoryExists(graphDirectoryIn) == false) {
+					System.err.println("The directory " + graphDirectoryIn + " does not exist!");
+					System.exit(1);
+				}
+			    graphDirectoryOut = args[3];
+				if (launcher.checkDirectoryExists(graphDirectoryOut) == false) {
+					System.err.println("The directory " + graphDirectoryOut + " does not exist!");
+					System.exit(1);
+				}
+				
+				// load the adjacency list and the list of keyphrases analized in a previous step
+				File adjacencyList = new File(graphDirectoryIn + "/" + adjacencyListFileName);
+				String masterList = graphDirectoryIn + "/" + keyphrasesListFileName;
+				LOGGER.info("Loading already preprocessed keyphrases...");
 				keyphrases = new Keyphrases(masterList);
 				LOGGER.info("Loading new keyphrases...");
 				keyphrases.read(dirIn);
@@ -139,7 +179,15 @@ public class Runner {
 				graph = new Graph(adjacencyList);
 				graph = new Graph(keyphrases.size(), graph);
 			}
-			else {
+			else { // clustering from scratch
+				
+				// check if the given directory exists
+				graphDirectoryOut = args[2];
+				if (launcher.checkDirectoryExists(graphDirectoryOut) == false) {
+					System.err.println("The directory " + graphDirectoryOut + " does not exist!");
+					System.exit(1);
+				}
+				
 				LOGGER.info("Loading keyphrases...");
 				// load the the keyphrases produced by KD
 				keyphrases = new Keyphrases();
@@ -148,9 +196,9 @@ public class Runner {
 				// init the graph structure containing the disconnected graphs (clusters)
 				graph = new Graph(keyphrases.size());
 			}
-			
 			long endTime_1 = System.currentTimeMillis();
 
+			
 			// add the threads to compare the keyphrases in input and build the graph
 			launcher.threads = new ArrayList<Thread>(numberOfThreads);
 			for (int i = 0; i < numberOfThreads; i++) {
@@ -176,9 +224,9 @@ public class Runner {
 			}
 			long endTime_2 = System.currentTimeMillis();
 
+			
 			// print the graph
 			// graph.printAdjacencyList();
-
 			LOGGER.info("Printing the clusters...");
 			// get the graph
 			String graphs = graph.BFS(0);
@@ -187,9 +235,11 @@ public class Runner {
 			printGraphs(graphs, keyphrases, dirOut);
 			long endTime_3 = System.currentTimeMillis();
 
+			
 			// print some graph statistics
 			String graphStatistic = Graph.getGraphStatistics(graphs);
 
+			
 			// prepare the report
 			String report = "\nReport:" + new Date();
 			File file = new File(dirOut);
@@ -204,7 +254,7 @@ public class Runner {
 			}).length + "\n";
 			report = report + "#keyphrases: " + keyphrases.totalSize() + " (unique:" + keyphrases.size() + ")\n";
 			report = report + "Reading keyphrases: " + (endTime_1 - startTime) + " [ms]\n";
-			report = report + "Bulding garphs: " + (endTime_2 - endTime_1) + " [ms]\n";
+			report = report + "Bulding graphs: " + (endTime_2 - endTime_1) + " [ms]\n";
 			report = report + "Writing graphs: " + (endTime_3 - endTime_2) + " [ms]\n";
 			report = report + "Total elapsed time: " + (endTime_3 - startTime) + " [ms]\n";
 			report = report + "\n" + "Graph statistics\n";
@@ -213,11 +263,17 @@ public class Runner {
 			report = report + "\n" + "Keyphrases statistics\n";
 			report = report + "=====================\n";
 			report = report + Keyphrases.getStatistics(keyphrases);
-			System.out.println(report);
+			
+			
+			// save the report
+			launcher.saveReport(report, graphDirectoryOut + "/" + "report.txt");
+			//System.out.println(report);
 			// System.out.println(keyphrases.cursor);
 
-			graph.printAdjacencyList(new File(graphDirectory + "/adjacencyList.txt"));
-			keyphrases.save(graphDirectory + "/masterList.txt");
+			
+			// saves the adjacency list and the list of keyphrases
+			graph.printAdjacencyList(new File(graphDirectoryOut + "/adjacencyList.txt"));
+			keyphrases.save(graphDirectoryOut + "/masterList.txt");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -226,7 +282,7 @@ public class Runner {
 	}
 	
 	/**
-	 * Print the disconnected graphs (clusters) into files
+	 * Print the disconnected graphs (clusters) into xml files
 	 * 
 	 * @param graphs
 	 *            the graph containing the disconnected graphs (clusters)
@@ -295,7 +351,7 @@ public class Runner {
 	 * @param fileName
 	 *            the file where write the report
 	 */
-	public void saveReport(String report, File fileName) {
+	public void saveReport(String report, String fileName) {
 
 		BufferedWriter bw = null;
 		FileWriter fw = null;
@@ -328,6 +384,24 @@ public class Runner {
 
 		}
 
+	}
+	
+	/**
+	 * Check if the given directory exists
+	 * 
+	 * @param dirName the directory
+	 * 
+	 * @return true if the directory exists; false otherwise.
+	 */
+	private boolean checkDirectoryExists(String dirName) {
+		
+		File file = new File(dirName);
+		
+		if (file.exists() && file.isDirectory())
+			return true;
+		
+		return false;
+		
 	}
 
 }
