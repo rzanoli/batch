@@ -1,6 +1,6 @@
 # batch
 
-BATCH (fBk keyphrAses sofT Clustering algoritHm) is an open source library for clustering keyphrases (expressions which help understand and summarize the content of documents) in text documents. It uses an algorithm based on graph connectivity for Cluster analysis, by first representing the similarity among keyphrases in a similarity graph, and afterwards finding all the connected subgraphs (groups of keyphrases that are connected to one another, but that have no connections to keyphrases outside the group) as clusters. The algorithm does not make any prior assumptions on the number of the clusters.
+BATCH (fBk keyphrAses sofT Clustering algoritHm) is an open source library for clustering keyphrases (expressions which help understand and summarize the content of documents) in text documents. It uses an algorithm based on graph connectivity for Cluster analysis, by first representing the similarity among keyphrases in a similarity graph, and then finding all the connected subgraphs (groups of keyphrases that are connected to one another, but that have no connections to keyphrases outside the group) as clusters. The algorithm does not make any prior assumptions on the number of the clusters.
 
 BATCH has been designed to meet the following requirements:
 
@@ -12,7 +12,7 @@ BATCH has been designed to meet the following requirements:
 - Portability: written in Java to be portable across different platforms.
 - Simplicity:  implemented as a maven project to make it easy to install, configure and use. A Command Line Interface (CLI) is provided for convenience of experiments.
 
-keyphrases compatibility relations are used to specify that two keyphrases should be assigned into one cluster. The current implemented relations are:
+keyphrases compatibility relations are used to specify that two keyphrases has to be assigned into one cluster. The current implemented relations are:
 - Abbreviation: We consider an abbreviation any token which finishes with a dot and we check if it is a substring of some 
   token in another keyphrase; kj and ki must have the same number of tokens in the same order, one or more tokens 
   in kj can be the abbreviation of one or more tokens in ki.
