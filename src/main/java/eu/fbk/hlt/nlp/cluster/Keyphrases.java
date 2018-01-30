@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -335,6 +336,8 @@ public class Keyphrases {
 
 		File dir = new File(dirName);
 		File[] files = dir.listFiles();
+		// sort the files to be consistent on the different platforms
+		Arrays.sort(files, (f1, f2) -> f1.compareTo(f2));
 
 		for (File file : files) {
 
