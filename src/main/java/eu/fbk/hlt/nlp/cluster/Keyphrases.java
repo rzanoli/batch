@@ -56,16 +56,15 @@ public class Keyphrases {
 	}
 
 	/**
-	 * The constructor that initializes the list of keyphrases
-	 * with the keypharses saved in a previous run  of the system
-	 * and clustered by the clustering algorithm. It is used for
-	 * implementing incremental clustering where the algorithm
-	 * has to compare the new keyphrases to cluster with the ones
-	 * that have already been compared.
+	 * The constructor that initializes the list of keyphrases with the keypharses
+	 * saved in a previous run of the system and clustered by the clustering
+	 * algorithm. It is used for implementing incremental clustering where the
+	 * algorithm has to compare the new keyphrases to cluster with the ones that
+	 * have already been compared.
 	 * 
-	 * First of all it loads the master list from file that contains
-	 * the keypharses and the documents ids where they appear; then it
-	 * moves the offset pointer to the last keyphrase in the list.
+	 * First of all it loads the master list from file that contains the keypharses
+	 * and the documents ids where they appear; then it moves the offset pointer to
+	 * the last keyphrase in the list.
 	 * 
 	 */
 	public Keyphrases(String fileName) throws Exception {
@@ -136,7 +135,7 @@ public class Keyphrases {
 	}
 
 	/**
-	 * The size of the list containing the unique keyphrases 
+	 * The size of the list containing the unique keyphrases
 	 * 
 	 * @return the size
 	 */
@@ -158,8 +157,8 @@ public class Keyphrases {
 	}
 
 	/**
-	 * Return the offset pointer to the first place in the list after
-	 * the last keyphrase.
+	 * Return the offset pointer to the first place in the list after the last
+	 * keyphrase.
 	 * 
 	 * @return the offset
 	 */
@@ -168,16 +167,16 @@ public class Keyphrases {
 		return this.offset;
 
 	}
-	
+
 	/**
 	 * Get an iterator to the list of the keyphrases
 	 * 
 	 * @return the iterator
 	 */
 	public Iterator<Keyphrase> iterator() {
-		
+
 		return this.masterList.keySet().iterator();
-		
+
 	}
 
 	/**
@@ -187,7 +186,7 @@ public class Keyphrases {
 	 */
 	public synchronized int next() {
 
-		if (cursor % 1000 == 0)
+		if (cursor % 1000 == 0 && innerList.size() != 0)
 			System.out.printf("\r%s %s", "keyphrases analized:", cursor * 100 / innerList.size() + "%");
 		return cursor++;
 
@@ -196,7 +195,8 @@ public class Keyphrases {
 	/**
 	 * Print the master list
 	 * 
-	 * @param fileName the file that will contain the master list
+	 * @param fileName
+	 *            the file that will contain the master list
 	 * 
 	 */
 	public void save(String fileName) throws Exception {
@@ -211,12 +211,25 @@ public class Keyphrases {
 			int counter = 0;
 			while (kx_it.hasNext()) {
 				Keyphrase kx = kx_it.next();
-				String kxText = kx.getText();
-				bw.write(counter + "\t" + kxText + "\t");
+				bw.write(counter + "\t");
+				Token[] tokens = kx.getTokens();
+				for (int i = 0; i < tokens.length; i++) {
+					Token token = tokens[i];
+					String text = token.getText();
+					String lemma = token.getLemma();
+					String PoS = token.getPoS();
+					bw.write(text + "," + PoS + "," + lemma);
+					if (i < tokens.length -1)
+						bw.write(" ");
+				}
+				bw.write("\t");
 				List<String> ids = masterList.get(kx);
 				Iterator<String> id_it = ids.iterator();
-				while (id_it.hasNext())
-					bw.write(id_it.next() + " ");
+				while (id_it.hasNext()) {
+					bw.write(id_it.next());
+					if (id_it.hasNext())
+						bw.write(" ");
+				}
 				bw.write("\n");
 				counter++;
 			}
@@ -233,7 +246,8 @@ public class Keyphrases {
 	/**
 	 * Load the master list
 	 * 
-	 * @param fileName the file that contains the master list
+	 * @param fileName
+	 *            the file that contains the master list
 	 * 
 	 */
 	private void load(String fileName) throws Exception {
@@ -248,8 +262,16 @@ public class Keyphrases {
 
 			while ((line = br.readLine()) != null) {
 				String[] splitLine = line.split("\t");
-				String kxText = splitLine[1];
-				Keyphrase kx = new Keyphrase(kxText);
+				String[] tokens = splitLine[1].split(" ");
+				Keyphrase kx = new Keyphrase(tokens.length);
+				for (int i = 0; i < tokens.length; i++) {
+					String[] token_i = tokens[i].split(",");
+					String text = token_i[0];
+					String PoS = token_i[1];
+					String lemma = token_i[2];
+					Token token = new Token(text, PoS, lemma);
+					kx.add(i, token);
+				}
 				String[] ids = splitLine[2].split(" ");
 				for (int i = 0; i < ids.length; i++)
 					add(ids[i], kx);
@@ -267,7 +289,8 @@ public class Keyphrases {
 	/**
 	 * Get some statistics about the keyphrases, e.g., number, length, ..
 	 * 
-	 * @param keyphrases the keyphrases to get statistics from
+	 * @param keyphrases
+	 *            the keyphrases to get statistics from
 	 * 
 	 * @return the statistics
 	 */
@@ -342,8 +365,11 @@ public class Keyphrases {
 		for (File file : files) {
 
 			if (file.isFile()) {
-				if (file.getName().endsWith(".tsv")) {
-					Map<String, Keyphrase> kxs = readKDFiles(file);
+				//System.out.println(file.getName());
+				// if (file.getName().endsWith(".tsv")) {
+				if (file.getName().endsWith(".iob")) {
+					// Map<String, Keyphrase> kxs = readKDFiles(file);
+					Map<String, Keyphrase> kxs = readIOBFiles(file);
 					Iterator<String> it = kxs.keySet().iterator();
 					while (it.hasNext()) {
 						String kxID = it.next();
@@ -386,11 +412,100 @@ public class Keyphrases {
 
 				String[] splitLine = line.split("\t");
 				String kxID = file.getName() + "_" + Integer.parseInt(splitLine[0]);
-				String kxText = splitLine[1];
-				Keyphrase kx = new Keyphrase(kxText);
+				String[] kxText = splitLine[1].split(" ");
+				Keyphrase kx = new Keyphrase(kxText.length);
+				for (int i = 0; i < kxText.length; i++)
+					kx.add(i, new Token(kxText[i], null, null));
 				result.put(kxID, kx);
 
 			}
+		} finally {
+			if (br != null)
+				br.close();
+		}
+
+		return result;
+
+	}
+
+	/**
+	 * Read the file produced by TextPro and enriched with a new column containing the kephrases recognized by KD
+	 * 
+	 * @param file
+	 *            the file containing the keyphrases
+	 * @return the index of the keyphrases in input with their ids
+	 */
+	private static Map<String, Keyphrase> readIOBFiles(File file) throws Exception {
+
+		Map<String, Keyphrase> result = new HashMap<String, Keyphrase>();
+
+		BufferedReader br = null;
+		String line = null;
+
+		try {
+
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
+
+			List<Token> tokenBuffer = new ArrayList<Token>();
+			
+			while ((line = br.readLine()) != null) {
+
+				String[] splitLine = line.split(" ");
+				String kxString = "";
+				if (splitLine.length == 4)
+					kxString = splitLine[3];
+				
+				if (kxString.equals("") || kxString.equals("O")) { // tag: O OR End Of Line
+					if (tokenBuffer.size() > 0) {
+						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size());
+						boolean containsName = false;
+						for (int i = 0; i < tokenBuffer.size(); i++) {
+							keyphrase.add(i, tokenBuffer.get(i));
+							if (tokenBuffer.get(i).getPoS().startsWith("S"))
+								containsName = true;
+						}
+						if (containsName == true) {
+							String kxID = file.getName() + "_" + result.size();
+							result.put(kxID, keyphrase);
+						}
+						//System.out.println("====================================");
+						tokenBuffer = new ArrayList<Token>();
+					}
+				}
+				else if (kxString.indexOf("B-") != -1) {
+					if (tokenBuffer.size() > 0) {
+						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size());
+						boolean containsName = false;
+						for (int i = 0; i < tokenBuffer.size(); i++) {
+							keyphrase.add(i, tokenBuffer.get(i));
+							if (tokenBuffer.get(i).getPoS().startsWith("S"))
+								containsName = true;
+						}
+						if (containsName == true) {
+							String kxID = file.getName() + "_" + result.size();
+							result.put(kxID, keyphrase);
+							//System.out.println("====================================");
+							tokenBuffer = new ArrayList<Token>();
+						}
+					}
+					String textString = splitLine[0];
+					String PoSString = splitLine[1];
+					String lemmaString = splitLine[2];
+					Token token = new Token(textString, PoSString, lemmaString);
+					tokenBuffer.add(token);
+					//System.out.println("token buffer:" + tokenBuffer.size());
+				}
+				else { // tag: I
+					String textString = splitLine[0];
+					String PoSString = splitLine[1];
+					String lemmaString = splitLine[2];
+					Token token = new Token(textString, PoSString, lemmaString);
+					tokenBuffer.add(token);
+					//System.out.println("token buffer:" + tokenBuffer.size());
+				}
+
+			}
+			
 		} finally {
 			if (br != null)
 				br.close();

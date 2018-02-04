@@ -21,6 +21,8 @@ import java.util.Vector;
 import eu.fbk.hlt.nlp.criteria.Abbreviation;
 import eu.fbk.hlt.nlp.criteria.Acronym;
 import eu.fbk.hlt.nlp.criteria.Entailment;
+import eu.fbk.hlt.nlp.criteria.ModifierSwap;
+import eu.fbk.hlt.nlp.criteria.SingularPlural;
 
 /**
  * 
@@ -110,7 +112,7 @@ public class Graph {
 		vertexAndEdge[1] = edge;
 		// adj[i].add(j);
 		adj[i].add(vertexAndEdge);
-
+		
 	}
 
 	/**
@@ -263,12 +265,17 @@ public class Graph {
 			bw.write(adj.length + "\n"); // number of vertices
 
 			for (int i = 0; i < adj.length; i++) {
-				bw.write(i + "\t");
+				bw.write(String.valueOf(i));
 				// Vector<Integer> list = adj[i];
 				Vector<int[]> list = adj[i];
-				for (int j = 0; j < list.size(); j++)
+				if (list.size() > 0)
+					bw.write("\t");
+				for (int j = 0; j < list.size(); j++) {
 					// System.out.print(list.get(j) + " ");
-					bw.write(list.get(j)[0] + "," + list.get(j)[1] + " ");
+					bw.write(list.get(j)[0] + "," + list.get(j)[1]);
+					if (j < list.size() - 1)
+						bw.write(" ");
+				}
 				bw.write("\n");
 			}
 
@@ -358,6 +365,8 @@ public class Graph {
 		int abbreviation = 0;
 		int entailment = 0;
 		int acronym = 0;
+		int modifierswap = 0;
+		int singularplural = 0;
 		Map<Integer, Integer> nodeDistribution = new TreeMap<Integer, Integer>();
 		for (int i = 0; i < splitGraphs.length; i++) {
 			String[] splitLine = splitGraphs[i].split(" ");
@@ -383,6 +392,10 @@ public class Graph {
 					acronym++;
 				else if (Integer.parseInt(splitLine[2]) == Entailment.id)
 					entailment++;
+				else if (Integer.parseInt(splitLine[2]) == ModifierSwap.id)
+					modifierswap++;
+				else if (Integer.parseInt(splitLine[2]) == SingularPlural.id)
+					singularplural++;
 			}
 		}
 		if (nodeDistribution.containsKey(nNodes)) {
@@ -395,7 +408,7 @@ public class Graph {
 		result.append("#Graphs (clusters) produced: " + nRoots + "\n");
 		result.append("#Vertices: " + nTotNodes + "\n");
 		result.append("#Edges: " + (abbreviation + acronym + entailment) + " (abbreviation:" + abbreviation + " "
-				+ "acronym:" + acronym + " entailment:" + entailment + ")" + "\n");
+				+ "acronym:" + acronym + " entailment:" + entailment + " modifier swap:" + modifierswap + " singular/plural:" + singularplural + ")" + "\n");
 
 		result.append("\nDistribution (#Graphs, #Vertices):\n");
 		Iterator<Integer> it = nodeDistribution.keySet().iterator();

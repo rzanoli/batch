@@ -10,8 +10,9 @@ import eu.fbk.hlt.nlp.cluster.Keyphrase;
 * Definition (2017-11-22):
 * 
 * We consider an abbreviation any token which finishes with a dot and we check if it is a substring of some 
-* token in another keyphrase; kj and ki must have the same number of tokens in the same order, one or more tokens 
-* in kj can be the abbreviation of one or more tokens in ki.
+* token in another keyphrase; kj and ki must have the same number of tokens in the same order, and the number of token must be more than 1, 
+* one token in kj can be the abbreviation of one token in ki
+*
 * 
 * E.g., 
 * Prof. for Professor, B. for Bernardo
@@ -35,20 +36,14 @@ public class Abbreviation {
 	 */
 	public static boolean evaluate(Keyphrase kx1, Keyphrase kx2) {
 
-		if (kx1.length() != kx2.length()) {
+		if (kx1.length() < 2) 
 			return false;
-		}
+		
+		if (kx1.length() != kx2.length())
+			return false;
 
-		boolean containsAbbreviations = false;
-		for (int i = 0; i < kx2.length(); i++) {
-			if (kx2.get(i).isAbbreviation()) {
-				containsAbbreviations = true;
-				break;
-			}
-		}
-		if (containsAbbreviations == false) {
+		if(kx2.containsAbbreviation() == false)
 			return false;
-		}
 
 		for (int i = 0; i < kx2.length(); i++) {
 			if (kx2.get(i).isAbbreviation()) {

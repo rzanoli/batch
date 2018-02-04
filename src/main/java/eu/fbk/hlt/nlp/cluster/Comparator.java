@@ -9,6 +9,8 @@ import eu.fbk.hlt.nlp.criteria.Abbreviation;
 import eu.fbk.hlt.nlp.criteria.Acronym;
 import eu.fbk.hlt.nlp.criteria.Entailment;
 import eu.fbk.hlt.nlp.criteria.Equality;
+import eu.fbk.hlt.nlp.criteria.ModifierSwap;
+import eu.fbk.hlt.nlp.criteria.SingularPlural;
 
 /**
  * This class represents a comparator that compares the keyphrases in input each
@@ -84,23 +86,33 @@ public class Comparator implements Runnable {
 				// apply the Abbreviation criteria
 				if (Abbreviation.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, Abbreviation.id);
-					//System.out.println(Abbreviation.description);
+					//System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Acronym criteria
 				else if (Acronym.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, Acronym.id);
-					//System.out.println(Acronym.description);
+					//System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Entailment criteria
 				else if (Entailment.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, Entailment.id);
-					//System.out.println(Entailment.description);
+					System.out.println("Entailment:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
-
+				// apply the Modifier Swap criteria
+				else if (ModifierSwap.evaluate(kx_i, kx_j)) {
+					graph.add(i, j, ModifierSwap.id);
+					//System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
+				}
+				// apply the Singular/Plural criteria
+				else if (SingularPlural.evaluate(kx_i, kx_j)) {
+					graph.add(i, j, SingularPlural.id);
+					//System.out.println("SingularPlural:" + kx_i.getText() + "\t" + kx_j.getText());
+				}
+				
 			}
 
 		}
-
+		
 	}
 
 }

@@ -41,8 +41,10 @@ public class Entailment {
 		if (kx1.length() != kx2.length() + 1)
 			return false;
 		
-		if (!kx1.get(0).equals(kx2.get(0)))
-				return false;
+		//if (!kx1.get(0).equals(kx2.get(0)))
+			//	return false;
+		if (!kx1.getHead().equals(kx2.getHead()))
+			return false;
 		
 		int i =0;
 		int j = 0;

@@ -192,6 +192,8 @@ public class Runner {
 				// load the the keyphrases produced by KD
 				keyphrases = new Keyphrases();
 				keyphrases.read(dirIn);
+				//System.out.println(keyphrases.size());
+				//System.out.println(keyphrases.totalSize());
 				LOGGER.info("Initializing graph data structure...");
 				// init the graph structure containing the disconnected graphs (clusters)
 				graph = new Graph(keyphrases.size());
@@ -249,7 +251,7 @@ public class Runner {
 			report = report + "#documents: " + (new File(dirIn)).listFiles(new FileFilter() {
 				@Override
 				public boolean accept(File pathname) {
-					return pathname.getName().toLowerCase().endsWith(".tsv");
+					return pathname.getName().toLowerCase().endsWith(".iob");
 				}
 			}).length + "\n";
 			report = report + "#keyphrases: " + keyphrases.totalSize() + " (unique:" + keyphrases.size() + ")\n";

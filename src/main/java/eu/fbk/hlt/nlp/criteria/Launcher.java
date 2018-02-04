@@ -41,7 +41,10 @@ public class Launcher {
 	 * 
 	 * @param args
 	 */
+	/*
 	public static void main(String[] args) {
+		
+		/*
 
 		System.out.println("easycriteria v0.2");
 		System.out.println("Since: November 2017");
@@ -52,9 +55,8 @@ public class Launcher {
 		System.out.println("Implemented rules: 2,3,9,10");
 		System.out.println("Usage: keyphrase1|keyphrase2 (e.g., >fondazione bruno kessler|fbk)");
 
-		/**
-		 * Init the launcher
-		 */
+		
+		// Init the launcher
 		Launcher launcher = Launcher.getInstance();
 
 		String[] str1List = { "FBK in Povo", "FBK", "Fondazione Bruno Kessler in Povo" };
@@ -62,9 +64,7 @@ public class Launcher {
 		
 		if (1 == 2) {
 
-			/**
-			 * Start time
-			 */
+			// Start time
 			final long startTime = System.currentTimeMillis();
 
 			int index = 0;
@@ -96,7 +96,7 @@ public class Launcher {
 		else {
 
 			Scanner in; // per la lettura dalla tastiera
-			/* crea l’oggetto che rappresenta la tastiera */
+			// crea l’oggetto che rappresenta la tastiera 
 			in = new Scanner(System.in);
 
 			System.out.print(">");
@@ -121,14 +121,11 @@ public class Launcher {
 
 					System.out.println("  " + str1 + " --> " + str2 + " ?");
 
-					/**
-					 * Start time
-					 */
+					
+					// Start time
 					final long startTime = System.currentTimeMillis();
 
-					/**
-					 * Fire rules
-					 */
+					// Fire rules
 					//System.out.println("Can '" + str2 + "' be derived from '" + str1 + "'?");
 					if (Abbreviation.evaluate(kx1, kx2))
 						System.out.println("  YES, by rule:" + Abbreviation.id + " [" + Abbreviation.description + "]");
@@ -141,10 +138,7 @@ public class Launcher {
 					else
 						System.out.println("  NO, it is not possible!");
 
-					/**
-					 * End time
-					 */
-
+					// End time
 					final long endTime = System.currentTimeMillis();
 
 					System.out.println("  Total execution time: " + (endTime - startTime) + "[ms]\n");
@@ -156,6 +150,7 @@ public class Launcher {
 			}
 
 		}
-	}
+		
+	} */
 
 }
