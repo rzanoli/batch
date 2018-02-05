@@ -43,20 +43,15 @@ https://github.com/rzanoli/batch/releases/download/v0.1-alpha/batch-0.0.1-SNAPSH
 
 Files in input contain the keyphrases produced by KD (https://dh.fbk.eu/technologies/kd) in IOB2 format, e.g.,
 ```
-La          RS          det         O
-divisa      SS          divisa      B-KEY
-del         ES          di/det 	    I-KEY
-Vecchio     SPN         Vecchio     I-KEY
-continente  B           continente  O
-aveva       VIY         avere 	    O
-subito      VSP         subire 	    O
-un          RS          indet 	    O
-improvviso  AS          improvviso  O
-crollo      SS          crollo 	    O
-nel         ES          in/det 	    O
-giorno      SS          giorno 	    O
-di          E           di          O
-Natale      SS          natale 	    B-KEY
+Sulla     ES  su/det    O
+salute    SS  salute    B-KEY
+del       ES  di/det    I-KEY
+pianeta   SS  pianeta   I-KEY
+stiamo    VI  stare     O
+perdendo  VG  perdere   O
+la        RS  det       O
+battaglia SS  battaglia B-KEY
+.         XPS full_stop O
 ```
 
 The output consists of xml files containing the produced clusters, e.g.,
