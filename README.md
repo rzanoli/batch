@@ -46,16 +46,16 @@ Files in input contain the keyphrases produced by KD (https://dh.fbk.eu/technolo
 La          RS          det         O
 divisa      SS          divisa      B-KEY
 del         ES          di/det 	    I-KEY
-Vecchio     SPN         Vecchio 	  I-KEY
-continente  B           continente 	O
+Vecchio     SPN         Vecchio     I-KEY
+continente  B           continente  O
 aveva       VIY         avere 	    O
 subito      VSP         subire 	    O
 un          RS          indet 	    O
-improvviso  AS          improvviso 	O
+improvviso  AS          improvviso  O
 crollo      SS          crollo 	    O
 nel         ES          in/det 	    O
 giorno      SS          giorno 	    O
-di          E           di 	        O
+di          E           di          O
 Natale      SS          natale 	    B-KEY
 ```
 
