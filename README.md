@@ -41,31 +41,36 @@ https://github.com/rzanoli/batch/releases/download/v0.1-alpha/batch-0.0.1-SNAPSH
 
 ### Dataset format
 
-Files in input contain the keyphrases produced by KD (https://dh.fbk.eu/technologies/kd) tool, e.g.,
+Files in input contain the keyphrases produced by KD (https://dh.fbk.eu/technologies/kd) in IOB2 format, e.g.,
 ```
-rank    keyword                       score                   frequency
-1       crac della banca popolare     23.702113582721168      2
-2       fascicolo                     23.591343915003407      2
-3       chiarezza sui prospetti       19.96721317927301       1
-4       crac della banca              17.766248619607136      1
-5       fascicolo sulle obbligazioni  17.10372433919623       1
-6       grane giudiziarie             16.2332507011343        1
-7       ex consiglieri                14.139538077863026      1
-8       sindaci revisori              13.82010208421649       1
+La          RS          det         O
+divisa      SS          divisa      B-KEY
+del         ES          di/det 	    I-KEY
+Vecchio     SPN         Vecchio 	  I-KEY
+continente  B           continente 	O
+aveva       VIY         avere 	    O
+subito      VSP         subire 	    O
+un          RS          indet 	    O
+improvviso  AS          improvviso 	O
+crollo      SS          crollo 	    O
+nel         ES          in/det 	    O
+giorno      SS          giorno 	    O
+di          E           di 	        O
+Natale      SS          natale 	    B-KEY
 ```
 
 The output consists of xml files containing the produced clusters, e.g.,
 ```
-<KEC_graph id="70370" node_count="2">
- <node id="70370" root="true">
-  <text>crac della banca popolare</text>
-  <ids>9964011.txt.tsv_17</ids>
- </node>
- <node id="37975" root="false">
-  <text>crac della banca</text>
-  <ids>9792299.txt.tsv_16 9712787.txt.tsv_5 9794648.txt.tsv_20</ids>
- </node>
- <edge relation_role="9" source="70370" target="37975"/>
+<KEC_graph id="88766" node_count="2">
+     <node id="88766" root="true">
+          <text>kit di scrittura gratuito</text>
+          <ids>9767800.txt.txp.iob_10</ids>
+     </node>
+     <node id="140151" root="false">
+          <text>kit gratuito di scrittura</text>
+          <ids>9891493.txt.txp.iob_14 9917114.txt.txp.iob_10</ids>
+     </node>
+     <edge relation_role="7" source="88766" target="140151"/>
 </KEC_graph>
 ```
 
@@ -77,13 +82,12 @@ Save the BATCH jar file that you have just downaloded into your working director
 
 From your working directory, run the following command:
 
-```>java -cp batch-0.0.1-SNAPSHOT-jar-with-dependencies.jar eu.fbk.hlt.nlp.cluster.Runner dirIn dirOut modelDir incremental```
+```>java -cp batch-0.0.1-SNAPSHOT-jar-with-dependencies.jar eu.fbk.hlt.nlp.cluster.Runner filesIn clustersOut graphDir```
 
 Where: 
-- dirIn is the directory containing the keyphrases produced by KD (https://dh.fbk.eu/technologies/kd) tool.
-- dirOut is the directory containing the produced clusters.
-- modelDir is the directory containing the produced graph and the keyphrases list in input that can be used in a second phase of incremental clustering.
-- incremental true for incremental clustering; false otherwise.
+- filesIn the directory containing the keyphrases produced by KD.
+- clustersOut the directory containing the produced clusters.
+- graphDir the directory containing the produced graph and the keyphrases list in input that can be used in a second phase of incremental clustering.
 
 ## Authors
 
