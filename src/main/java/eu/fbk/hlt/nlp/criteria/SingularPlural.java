@@ -23,31 +23,33 @@ public class SingularPlural {
 	public static final String description = "SingularPlural";
 
 	/**
-	 * Given a keyphrase kx1, can the keyphrase kx2 be derived from kx1?
+	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
 	 * 
-	 * @param kx1
-	 *            the keyphrase kx1
-	 * @param kx2
-	 *            the keyphrase kx2
-	 * @return if kx2 can be derived from kx1
+	 * @param key1
+	 *            the keyphrase key1
+	 * @param key2
+	 *            the keyphrase key2
+	 * @return if key2 can be derived from key1
 	 */
-	public static boolean evaluate(Keyphrase kx1, Keyphrase kx2) {
+	public static boolean evaluate(Keyphrase key1, Keyphrase key2) {
 
-		if (kx1.length() != kx2.length()) {
+		if (key1.length() != key2.length()) {
 			return false;
 		}
 
-		int formaCount = 0;
 		int lemmaCount = 0;
-		for (int i = 0; i < kx1.length(); i++) {
-			if (kx1.get(i).equals(kx2.get(i)))
-					formaCount++;
-			else if (kx1.get(i).equalsLemma(kx2.get(i)))
-					lemmaCount++;
-			else
+		for (int i = 0; i < key1.length(); i++) {
+			
+			if (key1.get(i).equalsFormIgnoreCase(key2.get(i))) {
+			}
+			else if ((key1.get(i).getPoS().equals("SS") && key2.get(i).getPoS().equals("SP")) ||
+					(key1.get(i).getPoS().equals("SP") && key2.get(i).getPoS().equals("SS"))) {
+				lemmaCount++;
+			} else {
 				return false;
+			}
 		}
-		
+
 		return (lemmaCount != 0);
 
 	}

@@ -5,21 +5,19 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
-import java.util.Vector;
+import java.util.TreeSet;
 
 /**
  * This class represents the list of keyphrases in input to cluster.
@@ -31,9 +29,12 @@ public class Keyphrases {
 
 	// it is used to store a keyphrase with all the documents ids where it appears
 	// it uses a LinkedHashMap to keep the keys in the order they were inserted
-	private Map<Keyphrase, List<String>> masterList;
+	private Map<Keyphrase, Set<String>> masterList;
 	// the list of unique keyphrases
 	private List<Keyphrase> innerList;
+
+	private static Map<String, HashSet<Integer>> synonyms;
+
 	// it is used by the Comparator class to move to the next keyphrase to compare
 	public int cursor;
 	// the total number of keyphrases including duplicates
@@ -47,11 +48,13 @@ public class Keyphrases {
 	/**
 	 * The constructor
 	 */
-	public Keyphrases() {
+	public Keyphrases() throws Exception {
 
-		this.masterList = new LinkedHashMap<Keyphrase, List<String>>();
+		this.masterList = new LinkedHashMap<Keyphrase, Set<String>>();
 		this.innerList = new ArrayList<Keyphrase>();
 		this.offset = 0;
+		synonyms = new HashMap<String, HashSet<Integer>>();
+		loadSynonyms();
 
 	}
 
@@ -67,10 +70,10 @@ public class Keyphrases {
 	 * the last keyphrase in the list.
 	 * 
 	 */
-	public Keyphrases(String fileName) throws Exception {
+	public Keyphrases(String keyphrasesfileName) throws Exception {
 
 		this();
-		load(fileName);
+		load(keyphrasesfileName);
 		this.offset = masterList.size();
 
 	}
@@ -88,13 +91,13 @@ public class Keyphrases {
 		nKeyphrases++;
 
 		if (!masterList.containsKey(kx)) {
-			List<String> ids = new ArrayList<String>();
+			Set<String> ids = new TreeSet<String>();
 			ids.add(id);
 			masterList.put(kx, ids);
 			// kx.setIkD(innerList.size());
 			innerList.add(kx);
 		} else {
-			List<String> ids = masterList.get(kx);
+			Set<String> ids = masterList.get(kx);
 			ids.add(id);
 			masterList.put(kx, ids);
 		}
@@ -187,7 +190,7 @@ public class Keyphrases {
 	public synchronized int next() {
 
 		if (cursor % 1000 == 0 && innerList.size() != 0)
-			System.out.printf("\r%s %s", "keyphrases analized:", cursor * 100 / innerList.size() + "%");
+			System.err.printf("\r%s %s", "keyphrases analyzed:", cursor * 100 / innerList.size() + "%");
 		return cursor++;
 
 	}
@@ -215,15 +218,15 @@ public class Keyphrases {
 				Token[] tokens = kx.getTokens();
 				for (int i = 0; i < tokens.length; i++) {
 					Token token = tokens[i];
-					String text = token.getText();
+					String form = token.getForm();
 					String lemma = token.getLemma();
 					String PoS = token.getPoS();
-					bw.write(text + "," + PoS + "," + lemma);
-					if (i < tokens.length -1)
+					bw.write(form + "_#_" + PoS + "_#_" + lemma);
+					if (i < tokens.length - 1)
 						bw.write(" ");
 				}
 				bw.write("\t");
-				List<String> ids = masterList.get(kx);
+				Set<String> ids = masterList.get(kx);
 				Iterator<String> id_it = ids.iterator();
 				while (id_it.hasNext()) {
 					bw.write(id_it.next());
@@ -265,11 +268,11 @@ public class Keyphrases {
 				String[] tokens = splitLine[1].split(" ");
 				Keyphrase kx = new Keyphrase(tokens.length);
 				for (int i = 0; i < tokens.length; i++) {
-					String[] token_i = tokens[i].split(",");
-					String text = token_i[0];
+					String[] token_i = tokens[i].split("_#_");
+					String form = token_i[0];
 					String PoS = token_i[1];
 					String lemma = token_i[2];
-					Token token = new Token(text, PoS, lemma);
+					Token token = new Token(form, PoS, lemma);
 					kx.add(i, token);
 				}
 				String[] ids = splitLine[2].split(" ");
@@ -283,6 +286,78 @@ public class Keyphrases {
 				br.close();
 
 		}
+
+	}
+
+	/**
+	 * Load the master list
+	 * 
+	 * @param fileName
+	 *            the file that contains the master list
+	 * 
+	 */
+
+	private void loadSynonyms() throws Exception {
+
+		BufferedReader br = null;
+
+		try {
+
+			br = new BufferedReader(
+					new InputStreamReader(getClass().getResourceAsStream("/italian_syn_list.txt"), "UTF-8"));
+
+			String line;
+
+			int lineNumber = 0;
+			while ((line = br.readLine()) != null) {
+				if (line.indexOf("_") != -1) {
+					continue;
+				}
+				String[] splitLine = line.split("\t");
+				for (int i = 0; i < splitLine.length; i++) {
+					String word_i = splitLine[i];
+					if (synonyms.containsKey(word_i)) {
+						HashSet<Integer> synonyms_words = synonyms.get(word_i);
+						synonyms_words.add(lineNumber);
+					} else {
+						HashSet<Integer> synonyms_words = new HashSet<Integer>();
+						synonyms_words.add(lineNumber);
+						synonyms.put(word_i, synonyms_words);
+					}
+				}
+			}
+
+		} finally {
+
+			if (br != null)
+				br.close();
+
+		}
+
+	}
+
+	/**
+	 * Say if 2 tokens are synonyms
+	 * 
+	 * @param token1
+	 * @param token2
+	 * 
+	 * @return true if they are synonyms; false otherwise
+	 */
+	public static boolean synonyms(Token token1, Token token2) {
+
+		if (synonyms.get(token1.getLemma()) == null || synonyms.get(token2.getLemma()) == null)
+			return false;
+
+		for (Integer item : synonyms.get(token1.getLemma())) {
+
+			if (synonyms.get(token2.getLemma()).contains(item))
+
+				return true;
+
+		}
+
+		return false;
 
 	}
 
@@ -365,7 +440,7 @@ public class Keyphrases {
 		for (File file : files) {
 
 			if (file.isFile()) {
-				//System.out.println(file.getName());
+				// System.out.println(file.getName());
 				// if (file.getName().endsWith(".tsv")) {
 				if (file.getName().endsWith(".iob")) {
 					// Map<String, Keyphrase> kxs = readKDFiles(file);
@@ -429,7 +504,31 @@ public class Keyphrases {
 	}
 
 	/**
-	 * Read the file produced by TextPro and enriched with a new column containing the kephrases recognized by KD
+	 * 
+	 * 
+	 * @param key1
+	 * @param key2
+	 * @return
+	 */
+	public boolean inDocument(Keyphrase key1, Keyphrase key2) {
+
+		for (String item : masterList.get(key1)) {
+
+			if (masterList.get(key2).contains(item))
+
+				return true;
+
+		}
+
+		return false;
+
+	}
+
+	// }
+
+	/**
+	 * Read the file produced by TextPro and enriched with a new column containing
+	 * the kephrases recognized by KD
 	 * 
 	 * @param file
 	 *            the file containing the keyphrases
@@ -446,16 +545,20 @@ public class Keyphrases {
 
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
 
-			List<Token> tokenBuffer = new ArrayList<Token>();
+			System.out.println(file.getName());
 			
+			List<Token> tokenBuffer = new ArrayList<Token>();
+
+			int lineNumber = 0;
 			while ((line = br.readLine()) != null) {
 
 				String[] splitLine = line.split(" ");
 				String kxString = "";
 				if (splitLine.length == 4)
 					kxString = splitLine[3];
-				
+				System.out.println("__" + kxString + "__");
 				if (kxString.equals("") || kxString.equals("O")) { // tag: O OR End Of Line
+					System.out.println("entrato");
 					if (tokenBuffer.size() > 0) {
 						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size());
 						boolean containsName = false;
@@ -465,14 +568,13 @@ public class Keyphrases {
 								containsName = true;
 						}
 						if (containsName == true) {
-							String kxID = file.getName() + "_" + result.size();
+							String kxID = file.getName() + "_" + lineNumber;
 							result.put(kxID, keyphrase);
 						}
-						//System.out.println("====================================");
+						// System.out.println("====================================");
 						tokenBuffer = new ArrayList<Token>();
 					}
-				}
-				else if (kxString.indexOf("B-") != -1) {
+				} else if (kxString.indexOf("B-") != -1) {
 					if (tokenBuffer.size() > 0) {
 						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size());
 						boolean containsName = false;
@@ -482,30 +584,31 @@ public class Keyphrases {
 								containsName = true;
 						}
 						if (containsName == true) {
-							String kxID = file.getName() + "_" + result.size();
+							String kxID = file.getName() + "_" + lineNumber;
 							result.put(kxID, keyphrase);
-							//System.out.println("====================================");
+							// System.out.println("====================================");
 							tokenBuffer = new ArrayList<Token>();
 						}
 					}
-					String textString = splitLine[0];
-					String PoSString = splitLine[1];
-					String lemmaString = splitLine[2];
-					Token token = new Token(textString, PoSString, lemmaString);
+					String form = splitLine[0];
+					String PoS = splitLine[1];
+					String lemma = splitLine[2];
+					Token token = new Token(form, PoS, lemma);
 					tokenBuffer.add(token);
-					//System.out.println("token buffer:" + tokenBuffer.size());
-				}
-				else { // tag: I
-					String textString = splitLine[0];
-					String PoSString = splitLine[1];
-					String lemmaString = splitLine[2];
-					Token token = new Token(textString, PoSString, lemmaString);
+					// System.out.println("token buffer:" + tokenBuffer.size());
+				} else { // tag: I
+					String form = splitLine[0];
+					String PoS = splitLine[1];
+					String lemma = splitLine[2];
+					Token token = new Token(form, PoS, lemma);
 					tokenBuffer.add(token);
-					//System.out.println("token buffer:" + tokenBuffer.size());
+					// System.out.println("token buffer:" + tokenBuffer.size());
 				}
 
+				lineNumber++;
+
 			}
-			
+
 		} finally {
 			if (br != null)
 				br.close();

@@ -1,11 +1,6 @@
 package eu.fbk.hlt.nlp.cluster;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
-import eu.fbk.hlt.nlp.criteria.Equality;
 
 /**
  * KeyPhrases are expressions contained in a document which help understand and
@@ -37,7 +32,8 @@ public class Keyphrase {
 	//private String id;
 	private String head;
 	private int headPosition;
-	private boolean containsAbbreviation;
+	private boolean containsAbbreviations;
+	private boolean containsPrepositions;
 
 	/**
 	 * The constructor
@@ -102,9 +98,20 @@ public class Keyphrase {
 	 * 
 	 * @return true if it contains an abbreviation; false otherwise
 	 */
-	public boolean containsAbbreviation() {
+	public boolean containsAbbreviations() {
 
-		return this.containsAbbreviation;
+		return this.containsAbbreviations;
+
+	}
+	
+	/**
+	 * Get if the keyphrase contains a preposition
+	 * 
+	 * @return true if it contains a preposition; false otherwise
+	 */
+	public boolean containsPrepositions() {
+
+		return this.containsPrepositions;
 
 	}
 
@@ -138,15 +145,21 @@ public class Keyphrase {
 		if (this.head == null &&
 				token.getPoS() != null &&
 				token.getPoS().startsWith("S")) {
-					this.head = token.getText().toLowerCase();
+					this.head = token.getForm();
 					this.headPosition = index;
 				}
 		
 		if (token.isAbbreviation())
-			containsAbbreviation = true;
-		//id = id + "_" + token.getText().toLowerCase();
+			containsAbbreviations = true;
+		else if (token.getPoS().startsWith("E"))
+			containsPrepositions = true;
+		//id = id + "_" + token.getForm().toLowerCase();
+		//if (token.getText().toLowerCase().equals("allarme") || token.getText().toLowerCase().equals("sec"))
+			//System.out.println(id);
 		
 	}
+	
+	
 	
 	/**
 	 * Get the tokens in the keyphrase
@@ -165,11 +178,12 @@ public class Keyphrase {
 	 * 
 	 * @return the keyphrase id
 	 */
-	//public int getID() {
+	/*
+	public String getID() {
 	//
-	//	return this.id;
+		return this.id;
 	//
-	//}
+	}*/
 
 	/**
 	 * Get the keyphrase text
@@ -180,7 +194,7 @@ public class Keyphrase {
 
 		StringBuilder buffer = new StringBuilder();
 		for (int i = 0; i < this.tokens.length; i++) {
-			buffer.append(this.tokens[i].getText());
+			buffer.append(this.tokens[i].getForm());
 			if (i < this.tokens.length -1)
 				buffer.append(" ");
 		}

@@ -3,12 +3,8 @@ package eu.fbk.hlt.nlp.cluster;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,8 +17,10 @@ import java.util.Vector;
 import eu.fbk.hlt.nlp.criteria.Abbreviation;
 import eu.fbk.hlt.nlp.criteria.Acronym;
 import eu.fbk.hlt.nlp.criteria.Entailment;
+import eu.fbk.hlt.nlp.criteria.Equality;
 import eu.fbk.hlt.nlp.criteria.ModifierSwap;
 import eu.fbk.hlt.nlp.criteria.SingularPlural;
+import eu.fbk.hlt.nlp.criteria.Synonym;
 
 /**
  * 
@@ -112,7 +110,7 @@ public class Graph {
 		vertexAndEdge[1] = edge;
 		// adj[i].add(j);
 		adj[i].add(vertexAndEdge);
-		
+
 	}
 
 	/**
@@ -185,13 +183,14 @@ public class Graph {
 					visitedInCurrentGraph.add(n);
 					queue.add(n);
 					visited[n] = true;
-					edges.append(s);
-					edges.append(" ");
-					edges.append(n);
-					edges.append(" ");
-					edges.append(criteria);
-					edges.append("\n");
 				}
+				edges.append(s);
+				edges.append(" ");
+				edges.append(n);
+				edges.append(" ");
+				edges.append(criteria);
+				edges.append("\n");
+				
 			} // end of inner while loop
 				// System.out.println();
 		} // end of outer while loop
@@ -319,7 +318,7 @@ public class Graph {
 				} else {
 					String[] splitLine = line.split("\t");
 					int root = Integer.parseInt(splitLine[0]);
-					
+
 					if (splitLine.length == 2) {
 						String[] vertices = splitLine[1].split(" ");
 						Vector<int[]> verticesList = adj[root];
@@ -330,7 +329,7 @@ public class Graph {
 							verticesList.add(vertexAndEdge);
 						}
 					}
-					
+
 				}
 				lineCounter++;
 			}
@@ -356,17 +355,21 @@ public class Graph {
 	 */
 	public static String getGraphStatistics(String graph) {
 
+		// System.out.println(graph);;
+
 		StringBuffer result = new StringBuffer();
 
 		String[] splitGraphs = graph.split("\n");
 		int nNodes = 0;
 		int nTotNodes = 0;
 		int nRoots = 0;
+		int equality = 0;
 		int abbreviation = 0;
 		int entailment = 0;
 		int acronym = 0;
 		int modifierswap = 0;
 		int singularplural = 0;
+		int synonym = 0;
 		Map<Integer, Integer> nodeDistribution = new TreeMap<Integer, Integer>();
 		for (int i = 0; i < splitGraphs.length; i++) {
 			String[] splitLine = splitGraphs[i].split(" ");
@@ -386,7 +389,9 @@ public class Graph {
 				nNodes++;
 				nTotNodes++;
 			} else { // edges
-				if (Integer.parseInt(splitLine[2]) == Abbreviation.id)
+				if (Integer.parseInt(splitLine[2]) == Equality.id)
+					equality++;
+				else if (Integer.parseInt(splitLine[2]) == Abbreviation.id)
 					abbreviation++;
 				else if (Integer.parseInt(splitLine[2]) == Acronym.id)
 					acronym++;
@@ -396,6 +401,10 @@ public class Graph {
 					modifierswap++;
 				else if (Integer.parseInt(splitLine[2]) == SingularPlural.id)
 					singularplural++;
+				else if (Integer.parseInt(splitLine[2]) == SingularPlural.id)
+					singularplural++;
+				else if (Integer.parseInt(splitLine[2]) == Synonym.id)
+					synonym++;
 			}
 		}
 		if (nodeDistribution.containsKey(nNodes)) {
@@ -407,8 +416,11 @@ public class Graph {
 
 		result.append("#Graphs (clusters) produced: " + nRoots + "\n");
 		result.append("#Vertices: " + nTotNodes + "\n");
-		result.append("#Edges: " + (abbreviation + acronym + entailment) + " (abbreviation:" + abbreviation + " "
-				+ "acronym:" + acronym + " entailment:" + entailment + " modifier swap:" + modifierswap + " singular/plural:" + singularplural + ")" + "\n");
+		result.append(
+				"#Edges: " + (equality + abbreviation + acronym + entailment + modifierswap + singularplural + synonym)
+						+ " (equality:" + equality + " abbreviation:" + abbreviation + " " + "acronym:" + acronym
+						+ " entailment:" + entailment + " modifier swap:" + modifierswap + " singular/plural:"
+						+ singularplural + " sybonym:" + synonym + ")" + "\n");
 
 		result.append("\nDistribution (#Graphs, #Vertices):\n");
 		Iterator<Integer> it = nodeDistribution.keySet().iterator();
@@ -421,8 +433,6 @@ public class Graph {
 		return result.toString();
 
 	}
-
-	
 
 	public static void main(String[] args) {
 

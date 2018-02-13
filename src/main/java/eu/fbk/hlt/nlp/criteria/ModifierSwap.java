@@ -22,50 +22,51 @@ public class ModifierSwap {
 	public static final String description = "ModifierSwap";
 
 	/**
-	 * Given a keyphrase kx1, can the keyphrase kx2 be derived from kx1?
+	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
 	 * 
-	 * @param kx1
-	 *            the keyphrase kx1
-	 * @param kx2
-	 *            the keyphrase kx2
-	 * @return if kx2 can be derived from kx1
+	 * @param key1
+	 *            the keyphrase key1
+	 * @param key2
+	 *            the keyphrase key2
+	 * 
+	 * @return if key2 can be derived from key1
 	 */
-	public static boolean evaluate(Keyphrase kx1, Keyphrase kx2) {
+	public static boolean evaluate(Keyphrase key1, Keyphrase key2) {
 
-		if (kx1.length() != kx2.length()) {
+		if (key1.length() != key2.length()) {
 			return false;
 		}
-		
-		if (kx1.length() == 1) //OR kx2.length() == 1; it means at least 2 tokens
+
+		if (key1.length() == 1)
 			return false;
-		
-		if (kx1.getHeadPosition() != kx2.getHeadPosition()) {
+
+		if (key1.getHeadPosition() != key2.getHeadPosition()) {
 			return false;
 		}
-		
-		if (!kx1.getHead().equals(kx2.getHead())) {
+
+		if (!key1.getHead().equals(key2.getHead())) {
 			return false;
 		}
 
 		boolean differentPosition = false;
-		boolean[] visited = new boolean[kx1.length()];
-		for (int i = 0; i < kx1.length(); i++) {
+		boolean[] visited = new boolean[key1.length()];
+		for (int i = 0; i < key1.length(); i++) {
 			boolean found = false;
-			for (int j = 0; j < kx2.length(); j++) {
+			for (int j = 0; j < key2.length(); j++) {
 				if (visited[j] == true)
 					continue;
-				if (kx1.get(i).equals(kx2.get(j))) {
-						visited[j] = true;
-						found = true;
-						if (i != j)
-							differentPosition = true;
-						break;
+				if (key1.get(i).equalsFormIgnoreCase(key2.get(j))) {
+					visited[j] = true;
+					found = true;
+					if (i != j)
+						differentPosition = true;
+					break;
 				}
 			}
 			if (found == false)
 				return false;
 		}
-		
+
 		if (differentPosition == false)
 			return false;
 

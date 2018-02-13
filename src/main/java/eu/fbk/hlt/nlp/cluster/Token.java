@@ -1,6 +1,6 @@
 package eu.fbk.hlt.nlp.cluster;
 
-import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * 
@@ -11,9 +11,13 @@ import java.util.Arrays;
  */
 public class Token {
 
-	// the content
-	private String str;
+	// the form
+	private String form;
+	// the lowercase form
+	private String lowercaseForm;
+	// the part-of-speech
 	private String PoS;
+	// the lemma
 	private String lemma;
 	// the number of its characters
 	private int characters;
@@ -27,18 +31,22 @@ public class Token {
 	// any token which has two or more dots e.g. (S.r.l.)
 	private boolean isAcronym;
 
-	public Token(String str) {
+	public Token(String form, String PoS, String lemma) {
 
-		this.str = str;
+		this.form = form;
+		this.PoS = PoS;
+		this.lemma = lemma;
+		this.lowercaseForm = form.toLowerCase();
+
 		// compute the length of the token ('.' are not considered)
 		// is abbreviation
 		// is acronym
 		int capitalizedLetters = 0;
 		int dots = 0;
-		for (int i = 0; i < this.str.length(); i++) {
-			if (this.str.charAt(i) != '.') {
+		for (int i = 0; i < form.length(); i++) {
+			if (form.charAt(i) != '.') {
 				this.characters++;
-				if (Character.isUpperCase(str.charAt(i)))
+				if (Character.isUpperCase(form.charAt(i)))
 					capitalizedLetters++;
 			} else
 				dots++;
@@ -50,22 +58,14 @@ public class Token {
 
 	}
 
-	public Token(String str, String PoS, String lemma) {
-
-		this(str);
-		this.PoS = PoS;
-		this.lemma = lemma;
-
-	}
-
 	/**
 	 * Get the text of the token
 	 * 
 	 * @return
 	 */
-	public String getText() {
+	public String getForm() {
 
-		return this.str;
+		return this.form;
 
 	}
 
@@ -98,7 +98,7 @@ public class Token {
 	 */
 	public int length() {
 
-		return this.str.length();
+		return this.form.length();
 
 	}
 
@@ -123,7 +123,7 @@ public class Token {
 	 */
 	public char charAt(int index) {
 
-		return this.str.charAt(index);
+		return this.lowercaseForm.charAt(index);
 
 	}
 
@@ -134,7 +134,7 @@ public class Token {
 	 */
 	public char startWith() {
 
-		return this.str.charAt(0);
+		return this.lowercaseForm.charAt(0);
 
 	}
 
@@ -169,39 +169,7 @@ public class Token {
 		if (isAbbreviation == false || this.characters >= token.characters || startWith() != token.startWith())
 			return false;
 
-		return token.getText().matches(this.str.replaceAll("\\.", "\\.+"));
-
-	}
-
-	/**
-	 * 
-	 * We don't use it anymore given that we consider as an acronym any token!!
-	 * 
-	 * 
-	 * We consider as acronym:
-	 * 
-	 * any token with two or more capitalized letters, either with dots or without
-	 * dots (e.g. FBK, S.p.A.) any token which has two or more dots e.g. (S.r.l.)
-	 *
-	 * @return
-	 * 
-	 */
-	public boolean isAcronym2() {
-
-		int capitalizedLetters = 0;
-		int dots = 0;
-		for (int i = 0; i < this.str.length(); i++) {
-			if (Character.isUpperCase(str.charAt(i))) {
-				capitalizedLetters++;
-			}
-			if (str.charAt(i) == '.') {
-				dots++;
-			}
-		}
-		if (capitalizedLetters >= 2 || dots >= 2)
-			return true;
-
-		return false;
+		return token.lowercaseForm.matches(this.lowercaseForm.replaceAll("\\.", "\\.+"));
 
 	}
 
@@ -211,6 +179,7 @@ public class Token {
 	 * 
 	 * @param token
 	 *            the token to compare with the given token
+	 *            
 	 * @return if the 2 tokens have the same lemma
 	 */
 	public boolean equalsLemma(Token token) {
@@ -220,7 +189,39 @@ public class Token {
 	}
 
 	/**
-	 * If the current token is equal to the token in input
+	 * Return true if the current token and the given token have the same form;
+	 * false otherwise
+	 * 
+	 * @param token
+	 *            the token to compare with the given token
+	 *            
+	 * @return if the 2 tokens have the same form
+	 */
+	public boolean equalsForm(Token token) {
+
+		return this.characters == token.characters && 
+				this.form.equals(token.form);
+
+	}
+
+	/**
+	 * Return true if the current token and the given token have the same form; the
+	 * comparison is case insensitive. False otherwise
+	 * 
+	 * @param token
+	 *            the token to compare with the given token
+	 *            
+	 * @return if the 2 tokens have the same form
+	 */
+	public boolean equalsFormIgnoreCase(Token token) {
+
+		return this.characters == token.characters && 
+				this.lowercaseForm.equals(token.lowercaseForm);
+
+	}
+
+	/**
+	 * If the current token is equal (they have the same form and PoS) to the token in input
 	 * 
 	 * @param token
 	 * 
@@ -235,7 +236,8 @@ public class Token {
 		if (obj == this)
 			return true;
 
-		return this.str.equalsIgnoreCase(((Token) obj).str);
+		return this.characters == ((Token) obj).characters && 
+				this.form.equals(((Token) obj).form) && this.PoS.equals(((Token) obj).PoS);
 
 	}
 
@@ -243,7 +245,7 @@ public class Token {
 	public int hashCode() {
 
 		// return id.hashCode();
-		return this.str.toLowerCase().hashCode();
+		return Objects.hash(form, PoS);
 
 	}
 

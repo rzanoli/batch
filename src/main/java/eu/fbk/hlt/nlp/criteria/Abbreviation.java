@@ -26,34 +26,34 @@ public class Abbreviation {
 	public static final String description = "Abbreviation";
 
 	/**
-	 * Given a keyphrase kx1, can the keyphrase kx2 be derived from kx1?
+	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
 	 * 
-	 * @param kx1
-	 *            the keyphrase kx1
-	 * @param kx2
-	 *            the keyphrase kx2
-	 * @return if kx2 can be derived from kx1
+	 * @param key1
+	 *            the keyphrase key1
+	 * @param key2
+	 *            the keyphrase key2
+	 * @return if keyphrase2 can be derived from keyphrase1
 	 */
-	public static boolean evaluate(Keyphrase kx1, Keyphrase kx2) {
+	public static boolean evaluate(Keyphrase key1, Keyphrase key2) {
 
-		if (kx1.length() < 2) 
-			return false;
-		
-		if (kx1.length() != kx2.length())
+		if (key1.length() < 2)
 			return false;
 
-		if(kx2.containsAbbreviation() == false)
+		if (key1.length() != key2.length())
+			return false;
+  
+		if (key2.containsAbbreviations() == false || 
+				key1.containsAbbreviations() == true)
 			return false;
 
-		for (int i = 0; i < kx2.length(); i++) {
-			if (kx2.get(i).isAbbreviation()) {
-				if (!kx2.get(i).isAbbreviationOf(kx1.get(i))) {
+		for (int i = 0; i < key2.length(); i++) {
+			if (key2.get(i).isAbbreviation()) {
+				if (!key2.get(i).isAbbreviationOf(key1.get(i))) {
 					return false;
 				}
 			} else {
-				if (!kx2.get(i).equals(kx1.get(i))) {
+				if (!key2.get(i).equalsFormIgnoreCase(key1.get(i)))
 					return false;
-				}
 			}
 		}
 

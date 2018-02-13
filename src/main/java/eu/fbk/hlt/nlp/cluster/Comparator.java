@@ -1,15 +1,13 @@
 package eu.fbk.hlt.nlp.cluster;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
 
 import eu.fbk.hlt.nlp.criteria.Abbreviation;
 import eu.fbk.hlt.nlp.criteria.Acronym;
 import eu.fbk.hlt.nlp.criteria.Entailment;
 import eu.fbk.hlt.nlp.criteria.Equality;
 import eu.fbk.hlt.nlp.criteria.ModifierSwap;
+import eu.fbk.hlt.nlp.criteria.PrepositionalVariant;
 import eu.fbk.hlt.nlp.criteria.SingularPlural;
 
 /**
@@ -30,6 +28,7 @@ public class Comparator implements Runnable {
 	private Keyphrases kxs;
 	// the graph structure that will contain the edged keyphrases
 	private Graph graph;
+
 
 	/**
 	 * The constructor
@@ -74,45 +73,57 @@ public class Comparator implements Runnable {
 					j = 0;
 				if (j == i)// or Equality.evaluate(kx_i, kx_j)
 					break;
-				
+
 				if (i < kxs.getOffset(i) && j < kxs.getOffset(i))
 					continue;
-				
+
 				Keyphrase kx_i = kxs.get(i);
 				Keyphrase kx_j = kxs.get(j);
-				
-				//System.out.println("confronto:" + i + ":" + j + "\t" + kx_i.getText() + "-->" + kx_j.getText());
-				
+
+				// apply the Equality criteria
+				if (Equality.evaluate(kx_i, kx_j)) {
+					graph.add(i, j, Equality.id);
+					// System.out.println("Equality:" + kx_i.getText() + "\t" + kx_j.getText());
+				}
 				// apply the Abbreviation criteria
-				if (Abbreviation.evaluate(kx_i, kx_j)) {
+			    else if (Abbreviation.evaluate(kx_i, kx_j)) {
+					// if (kxs.inDocument(kx_i, kx_j)) {
 					graph.add(i, j, Abbreviation.id);
-					//System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
+					// System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Acronym criteria
 				else if (Acronym.evaluate(kx_i, kx_j)) {
+					// if (kxs.inDocument(kx_i, kx_j)) {
 					graph.add(i, j, Acronym.id);
-					//System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
+					// System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
+					// }
 				}
 				// apply the Entailment criteria
 				else if (Entailment.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, Entailment.id);
-					System.out.println("Entailment:" + kx_i.getText() + "\t" + kx_j.getText());
+					// System.out.println("Entailment:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Modifier Swap criteria
 				else if (ModifierSwap.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, ModifierSwap.id);
-					//System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
+					// System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Singular/Plural criteria
 				else if (SingularPlural.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, SingularPlural.id);
-					//System.out.println("SingularPlural:" + kx_i.getText() + "\t" + kx_j.getText());
+					// System.out.println("SingularPlural:" + kx_i.getText() + "\t" +
+					// kx_j.getText());
 				}
-				
+				// apply the Singular/Plural criteria
+				else if (PrepositionalVariant.evaluate(kx_i, kx_j)) {
+					graph.add(i, j, PrepositionalVariant.id);
+					// System.out.println("PrepositionalVariant :" + kx_i.getText() + "\t" +
+					// kx_j.getText());
+				}
 			}
 
 		}
-		
+
 	}
 
 }

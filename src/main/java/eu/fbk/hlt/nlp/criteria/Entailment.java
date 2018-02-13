@@ -2,7 +2,6 @@ package eu.fbk.hlt.nlp.criteria;
 
 import eu.fbk.hlt.nlp.cluster.Keyphrase;
 
-
 /*
 * 
 * Criteria: Entailment
@@ -21,49 +20,47 @@ import eu.fbk.hlt.nlp.cluster.Keyphrase;
 *
 */
 public class Entailment {
-	
+
 	// the criteria id
 	public static final int id = 9;
 	// the criteria description
-	public static final  String description = "Entailment";
-	
+	public static final String description = "Entailment";
+
 	/**
-	 * Given a keyphrase kx1, can the keyphrase kx2 be derived from kx1?
+	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
 	 * 
-	 * @param kx1
-	 *            the keyphrase kx1
-	 * @param kx2
-	 *            the keyphrase kx2
-	 * @return if kx2 can be derived from kx1
+	 * @param key1
+	 *            the keyphrase key1
+	 * @param key2
+	 *            the keyphrase key2
+	 *            
+	 * @return if key2 can be derived from key1
 	 */
-	public static boolean evaluate(Keyphrase kx1, Keyphrase kx2) {
-		
-		if (kx1.length() != kx2.length() + 1)
+	public static boolean evaluate(Keyphrase key1, Keyphrase key2) {
+
+		if (key1.length() != key2.length() + 1)
 			return false;
-		
-		//if (!kx1.get(0).equals(kx2.get(0)))
-			//	return false;
-		if (!kx1.getHead().equals(kx2.getHead()))
+
+		if (!key1.getHead().equals(key2.getHead()))
 			return false;
-		
-		int i =0;
+
+		int i = 0;
 		int j = 0;
 		int nDifferences = 0;
-		while(i < kx1.length() && j < kx2.length()) {
-			if (kx1.get(i).equals(kx2.get(j))) {
+		while (i < key1.length() && j < key2.length()) {
+			if (key1.get(i).equalsFormIgnoreCase(key2.get(j))) {
 				i++;
 				j++;
-			}
-			else {
+			} else {
 				nDifferences++;
 				i++;
-			}		
+			}
 		}
-		if (i < kx1.length() -1 ||  j < kx2.length() -1 || nDifferences > 1)
+		if (i < key1.length() - 1 || j < key2.length() - 1 || nDifferences > 1)
 			return false;
-		
+
 		return true;
-		
+
 	}
 
 }

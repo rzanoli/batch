@@ -1,41 +1,36 @@
 package eu.fbk.hlt.nlp.cluster;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import eu.fbk.hlt.nlp.criteria.Abbreviation;
-import eu.fbk.hlt.nlp.criteria.Acronym;
-import eu.fbk.hlt.nlp.criteria.Entailment;
+
+/*
+awk 'BEGIN {counter = 0; FS = "\t"}; {n = split($2, count, " "); for (i = 1; i <= n; i++) if (count[i] ~ /,3/) counter++;} END{printf("%s\n", counter);}' adjacencyList.txt | more
+*/
 
 /**
- * This class represents the entry point to the application of clustering keyphrases 
- * (expressions which help understand and summarize the content of documents) in text documents. It uses 
- * an algorithm based on graph connectivity for Cluster analysis, by first representing the similarity among 
- * keyphrases in a similarity graph, and afterwards finding all the connected subgraphs (groups of keyphrases 
- * that are connected to one another, but that have no connections to keyphrases outside the group) as clusters. 
- * The algorithm does not make any prior assumptions on the number of the clusters.
+ * This class represents the entry point to the application of clustering
+ * keyphrases (expressions which help understand and summarize the content of
+ * documents) in text documents. It uses an algorithm based on graph
+ * connectivity for Cluster analysis, by first representing the similarity among
+ * keyphrases in a similarity graph, and afterwards finding all the connected
+ * subgraphs (groups of keyphrases that are connected to one another, but that
+ * have no connections to keyphrases outside the group) as clusters. The
+ * algorithm does not make any prior assumptions on the number of the clusters.
  * 
- * Runner can create clusters starting from scratch or add new keyphrases to the data collection without having to 
- * perform a full re-clustering.
+ * Runner can create clusters starting from scratch or add new keyphrases to the
+ * data collection without having to perform a full re-clustering.
  * 
  * @author rzanoli
  *
@@ -113,18 +108,17 @@ public class Runner {
 		if (args.length != 3 && args.length != 4) {
 			System.out.println("Usage:\n");
 			System.out.println("java Runner dirIn dirOut graphDirectoryOut //clustering from scratch");
-			System.out.println("java Runner dirIn dirOut graphDirectoryIn graphDirectoryOut //incremental clustering");
-			System.out.println("\nWhere:\n" +
-					" dirIn: the directory containing the keyphrases produced by KD" +
-					" dirOut: the directory containing the produced clusters in xml format" +
-					" graphDirectoryOut: the directory containing the adjacency list of the produced graphs" +
-					" graphDirectoryIn: the directory containing the adjacency list of a previuous clusetring phase\n");
+			System.out.println("java Runner dirIn dirOut graphDirectoryOut graphDirectoryIn //incremental clustering");
+			System.out.println("\nWhere:\n" + " dirIn: the directory containing the keyphrases produced by KD"
+					+ " dirOut: the directory containing the produced clusters in xml format"
+					+ " graphDirectoryOut: the directory containing the adjacency list of the produced graphs"
+					+ " graphDirectoryIn: the directory containing the adjacency list of a previuous clusetring phase\n");
 			System.exit(1);
 		}
-		
+
 		// init the launcher
 		Runner launcher = new Runner();
-		
+
 		// the directory containing the keyphrases produced by KD
 		String dirIn = args[0];
 		if (launcher.checkDirectoryExists(dirIn) == false) {
@@ -137,75 +131,72 @@ public class Runner {
 			System.err.println("The directory " + dirOut + " does not exist!");
 			System.exit(1);
 		}
-		
-		
+		String graphDirectoryOut = args[2];
+		if (launcher.checkDirectoryExists(graphDirectoryOut) == false) {
+			System.err.println("The directory " + graphDirectoryOut + " does not exist!");
+			System.exit(1);
+		}
+
 		try {
 
 			// attach Shut Down Hook
 			launcher.attachShutDownHook();
 
 			long startTime = System.currentTimeMillis();
-			
+
 			Graph graph = null;
 			Keyphrases keyphrases = null;
 			String adjacencyListFileName = "adjacencyList.txt";
 			String keyphrasesListFileName = "masterList.txt";
 			String graphDirectoryIn;
-			String graphDirectoryOut;
-			
+
 			// incremental clustering
 			if (args.length == 4) {
-				
+
 				// check if the given directories exist
-				graphDirectoryIn = args[2];
+				graphDirectoryIn = args[3];
 				if (launcher.checkDirectoryExists(graphDirectoryIn) == false) {
 					System.err.println("The directory " + graphDirectoryIn + " does not exist!");
 					System.exit(1);
 				}
-			    graphDirectoryOut = args[3];
-				if (launcher.checkDirectoryExists(graphDirectoryOut) == false) {
-					System.err.println("The directory " + graphDirectoryOut + " does not exist!");
-					System.exit(1);
-				}
-				
-				// load the adjacency list and the list of keyphrases analized in a previous step
+
+				// load the adjacency list and the list of keyphrases analized in a previous
+				// step
 				File adjacencyList = new File(graphDirectoryIn + "/" + adjacencyListFileName);
 				String masterList = graphDirectoryIn + "/" + keyphrasesListFileName;
-				LOGGER.info("Loading already preprocessed keyphrases...");
+				LOGGER.info("Loading clustered keyphrases...");
 				keyphrases = new Keyphrases(masterList);
 				LOGGER.info("Loading new keyphrases...");
 				keyphrases.read(dirIn);
+
+				// keyphrases.printInnerList();
+				// System.exit(1);
+
 				LOGGER.info("Initializing graph data structure...");
 				graph = new Graph(adjacencyList);
 				graph = new Graph(keyphrases.size(), graph);
-			}
-			else { // clustering from scratch
 				
-				// check if the given directory exists
-				graphDirectoryOut = args[2];
-				if (launcher.checkDirectoryExists(graphDirectoryOut) == false) {
-					System.err.println("The directory " + graphDirectoryOut + " does not exist!");
-					System.exit(1);
-				}
-				
+			} else { // clustering from scratch
+
 				LOGGER.info("Loading keyphrases...");
 				// load the the keyphrases produced by KD
 				keyphrases = new Keyphrases();
 				keyphrases.read(dirIn);
-				//System.out.println(keyphrases.size());
-				//System.out.println(keyphrases.totalSize());
+
+				// keyphrases.printInnerList();
+				// System.exit(1);
+				// System.out.println(keyphrases.size());
+
+				// System.out.println(keyphrases.totalSize());
 				LOGGER.info("Initializing graph data structure...");
 				// init the graph structure containing the disconnected graphs (clusters)
 				graph = new Graph(keyphrases.size());
 			}
 			long endTime_1 = System.currentTimeMillis();
 
-			
 			// add the threads to compare the keyphrases in input and build the graph
 			launcher.threads = new ArrayList<Thread>(numberOfThreads);
 			for (int i = 0; i < numberOfThreads; i++) {
-				// start the monitor for storing tweets written by the
-				// account
 				Thread thread = new Thread(new Comparator(interrupted, keyphrases, graph));
 				launcher.threads.add(thread);
 			}
@@ -226,7 +217,6 @@ public class Runner {
 			}
 			long endTime_2 = System.currentTimeMillis();
 
-			
 			// print the graph
 			// graph.printAdjacencyList();
 			LOGGER.info("Printing the clusters...");
@@ -235,13 +225,12 @@ public class Runner {
 			// LOGGER.info("\n" + graphs + "============================");
 			// and print the disconnected graphs (cluster) as single xml files
 			printGraphs(graphs, keyphrases, dirOut);
+
 			long endTime_3 = System.currentTimeMillis();
 
-			
 			// print some graph statistics
 			String graphStatistic = Graph.getGraphStatistics(graphs);
 
-			
 			// prepare the report
 			String report = "\nReport:" + new Date();
 			File file = new File(dirOut);
@@ -265,24 +254,22 @@ public class Runner {
 			report = report + "\n" + "Keyphrases statistics\n";
 			report = report + "=====================\n";
 			report = report + Keyphrases.getStatistics(keyphrases);
-			
-			
+
 			// save the report
 			launcher.saveReport(report, graphDirectoryOut + "/" + "report.txt");
-			//System.out.println(report);
+			// System.out.println(report);
 			// System.out.println(keyphrases.cursor);
 
-			
 			// saves the adjacency list and the list of keyphrases
 			graph.printAdjacencyList(new File(graphDirectoryOut + "/adjacencyList.txt"));
 			keyphrases.save(graphDirectoryOut + "/masterList.txt");
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
-	
+
 	/**
 	 * Print the disconnected graphs (clusters) into xml files
 	 * 
@@ -298,13 +285,12 @@ public class Runner {
 		StringBuilder out = new StringBuilder();
 		int nNodes = 0;
 		String[] splitGraphs = graphs.split("\n");
-	    int root = -1;
+		int root = -1;
 		for (int i = 0; i <= splitGraphs.length; i++) {
 			// System.out.println("======" + splitGraphs[i]);
 			if (i == splitGraphs.length || splitGraphs[i].equals("")) {
 
-				Writer writer = new OutputStreamWriter(new FileOutputStream(dirOut + "/" + root + ".xml"),
-						"UTF-8");
+				Writer writer = new OutputStreamWriter(new FileOutputStream(dirOut + "/" + root + ".xml"), "UTF-8");
 				// System.out.println(dirOut + "/" + i + ".xml");
 				BufferedWriter fout = new BufferedWriter(writer);
 				fout.write("<KEC_graph id=\"" + root + "\"" + " node_count=\"" + nNodes + "\">\n");
@@ -387,23 +373,24 @@ public class Runner {
 		}
 
 	}
-	
+
 	/**
 	 * Check if the given directory exists
 	 * 
-	 * @param dirName the directory
+	 * @param dirName
+	 *            the directory
 	 * 
 	 * @return true if the directory exists; false otherwise.
 	 */
 	private boolean checkDirectoryExists(String dirName) {
-		
+
 		File file = new File(dirName);
-		
+
 		if (file.exists() && file.isDirectory())
 			return true;
-		
+
 		return false;
-		
+
 	}
 
 }
