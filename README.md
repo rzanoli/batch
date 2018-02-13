@@ -13,14 +13,16 @@ BATCH has been designed to meet the following requirements:
 - Simplicity:  implemented as a maven project to make it easy to install, configure and use. A Command Line Interface (CLI) is provided for convenience of experiments.
 
 keyphrases compatibility relations are used to specify that two keyphrases has to be assigned into one cluster. The current implemented relations are:
-- Abbreviation: We consider an abbreviation any token which finishes with a dot and we check if it is a substring of some token in another keyphrase; kj and ki must have the same number of tokens in the same order, and the number of token must be more than 1, one token in kj can be the abbreviation of one token in ki
-- Acronym: kj and ki are variants if kj consists of one token of n>1 letters and ki consists of n tokens; the initials of the n tokens of ki are the letters composing the single token of kj in the same order.
-- Entailment: check if two variants have the same semantic head and one has just one token less.
-- Equality: kj and kl are equal (i.e. same tokens in the same order). This is a special case, as occurrences of the same keyphrase are not considered as different variants, rather we collapse them into a single keyphrase type.
-- Modifier Swap: check if all tokens are the same in different order and the head is the same (no permutation of the head)
-e.g. elezioni francesi 2017 for elezioni 2017 francesi
-- Singular/Plural: check if two variants have the same lemma (based on the comp-morpho analysis of TextPro)
+- Abbreviation(id=2): We consider an abbreviation any token which finishes with a dot and we check if it is a substring of some token in another keyphrase; kj and ki must have the same number of tokens in the same order, and the number of token must be more than 1, one token in kj can be the abbreviation of one token in ki
+- Acronym(id=3): kj and ki are variants if kj consists of one token of n>1 letters and ki consists of n tokens; the initials of the n tokens of ki are the letters composing the single token of kj in the same order.
+- Singular/Plural(id=4): check if two variants have the same lemma (based on the comp-morpho analysis of TextPro)
 e.g. fondazione for fondazioni (and viceversa)
+- Modifier Swap(id=7): check if all tokens are the same in different order and the head is the same (no permutation of the head)
+e.g. elezioni francesi 2017 for elezioni 2017 francesi
+- Entailment(id=9): check if two variants have the same semantic head and one has just one token less.
+- Equality(id=10): kj and kl are equal (i.e. same tokens in the same order). This is a special case, as occurrences of the same keyphrase are not considered as different variants, rather we collapse them into a single keyphrase type.
+- Sysnonym(id=11)
+- Prepositional Variant(id=12)
 
 
 ## Getting started
@@ -41,7 +43,7 @@ https://github.com/rzanoli/batch/releases/download/v0.1-alpha/batch-0.0.1-SNAPSH
 
 ### Dataset format
 
-Files in input contain the keyphrases produced by KD (https://dh.fbk.eu/technologies/kd) in IOB2 format, e.g.,
+Files in input contain the documents annotated by TextPro (http://textpro.fbk.eu/) and the keyphrases produced by KD (https://dh.fbk.eu/technologies/kd) in IOB2 format, e.g.,
 ```
 Sulla     ES  su/det    O
 salute    SS  salute    B-KEY
@@ -77,12 +79,14 @@ Save the BATCH jar file that you have just downaloded into your working director
 
 From your working directory, run the following command:
 
-```>java -cp batch-0.0.1-SNAPSHOT-jar-with-dependencies.jar eu.fbk.hlt.nlp.cluster.Runner filesIn clustersOut graphDir```
+```>java -cp batch-0.0.1-SNAPSHOT-jar-with-dependencies.jar eu.fbk.hlt.nlp.cluster.Runner dirIn dirOut graphDirectoryOut [graphDirectoryIn]```
 
 Where: 
-- filesIn the directory containing the keyphrases produced by KD.
-- clustersOut the directory containing the produced clusters.
-- graphDir the directory containing the produced graph and the keyphrases list in input that can be used in a second phase of incremental clustering.
+- dirIn: the directory containing the keyphrases produced by KD
+- dirOut: the directory containing the produced clusters in xml format
+- clustersOut the directory containing the produced clusters
+- graphDirectoryOut: the directory containing the adjacency list of the produced graphs
+- graphDirectoryIn: the directory containing the adjacency list of a previuous clusetring phase; this directory is required for running incremental clustering. 
 
 ## Authors
 
