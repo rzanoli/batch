@@ -30,10 +30,10 @@ e.g. elezioni francesi 2017 for elezioni 2017 francesi
 The algorithm consists of 3 main steps:
 
 - reading the keyphrases and filtering out the duplicates
-- comapring the keyphrases each other and building the graph
+- comparing the keyphrases each other and building the graph
 - traversing the graph by Breadth First Search (BFS) and printing all the connected subgraphs (clusters)
 
-During the first step the keyphrases produced by KD are read and the duplicates removed. 2 keyphrases are the same keyphrase if they have both the same form (case sensitive string match) and Part-of-Speech. Then, in the second step, the unique keyphrases are compared each other by applying the implemented criteria (e.g., abbreviation). When a criterion has been successfully applied, then a link between the 2 keyphrases is created. The result of this step is an adjacency list containing all the possible links between the keyphrases. Finally, in the third and last step, all the connected sub-graphs are discovered by Breadth First Search (BFS) and the produced clusters saved into files that are in .xml format.
+During the first step the keyphrases produced by KD are read and the duplicates removed. Two keyphrases are the same keyphrase if they have both the same form (case sensitive string match) and Part-of-Speech. Then, in the second step, the unique keyphrases are compared each other by applying the implemented criteria (e.g., abbreviation). When a criterion has been successfully applied, then a link between the 2 keyphrases is created. The result of this step is an adjacency list containing all the possible links between the keyphrases. Finally, in the third and last step, all the connected sub-graphs are discovered by Breadth First Search (BFS) and the produced clusters saved into files that are in .xml format.
 
 
 ## Getting started
