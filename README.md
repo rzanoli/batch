@@ -90,14 +90,14 @@ Save the BATCH jar file that you have just downaloded into your working director
 
 From your working directory, run the following command:
 
-```>java -cp batch-0.0.1-SNAPSHOT-jar-with-dependencies.jar eu.fbk.hlt.nlp.cluster.Runner dirIn dirOut graphDirectoryOut [graphDirectoryIn]```
+```>java -cp batch-0.0.1-SNAPSHOT-jar-with-dependencies.jar eu.fbk.hlt.nlp.cluster.Runner  -i dirIn -o dirOut -g graphOut [-a graphIn] [-p processes]```
 
 Where: 
-- dirIn: the directory containing the keyphrases produced by KD
+- dirIn: the directory containing the keyphrases to cluster
 - dirOut: the directory containing the produced clusters in xml format
-- clustersOut the directory containing the produced clusters
-- graphDirectoryOut: the directory containing the adjacency list of the produced graphs
-- graphDirectoryIn: the directory containing the adjacency list of a previuous clusetring phase; this directory is required for running incremental clustering. 
+- graphOut the directory containing the produced adjacency list and keyphrases index
+- graphIn: the adjacency list and the keyphrases index of a previuous clustering phase to perform incremental clustering
+- processes: the number of processes to perform clustering (default 1)
 
 ## Authors
 
