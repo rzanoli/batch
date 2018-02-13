@@ -546,8 +546,6 @@ public class Keyphrases {
 
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
 
-			System.out.println(file.getName());
-			
 			List<Token> tokenBuffer = new ArrayList<Token>();
 
 			int lineNumber = 0;
@@ -557,9 +555,7 @@ public class Keyphrases {
 				String kxString = "";
 				if (splitLine.length == 4)
 					kxString = splitLine[3];
-				System.out.println("__" + kxString + "__");
 				if (kxString.equals("") || kxString.equals("O")) { // tag: O OR End Of Line
-					System.out.println("entrato");
 					if (tokenBuffer.size() > 0) {
 						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size());
 						boolean containsName = false;
