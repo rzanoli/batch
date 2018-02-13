@@ -233,7 +233,6 @@ public class Runner {
 
 			// prepare the report
 			String report = "\nReport:" + new Date();
-			File file = new File(dirOut);
 			report = report + "\n\n" + "System Info\n";
 			report = report + "===========\n";
 			report = report + "#thread: " + Runner.numberOfThreads + "\n";

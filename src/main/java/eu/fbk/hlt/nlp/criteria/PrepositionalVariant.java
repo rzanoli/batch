@@ -1,7 +1,6 @@
 package eu.fbk.hlt.nlp.criteria;
 
 import eu.fbk.hlt.nlp.cluster.Keyphrase;
-import eu.fbk.hlt.nlp.cluster.Keyphrases;
 
 /*
 * 
@@ -38,8 +37,8 @@ public class PrepositionalVariant {
 		if (key1.length() != key2.length())
 			return false;
 		
-		if (key1.containsPrepositions() == false ||
-				key2.containsPrepositions() == false)
+		if (key1.prepositions() == 0 ||
+				key2.prepositions() == 0)
 			return false;
 		
 		int prepositionsCount = 0;

@@ -42,8 +42,8 @@ public class Abbreviation {
 		if (key1.length() != key2.length())
 			return false;
   
-		if (key2.containsAbbreviations() == false || 
-				key1.containsAbbreviations() == true)
+		if (key2.abbreviations() != 1 || 
+				key1.abbreviations() > 0)
 			return false;
 
 		for (int i = 0; i < key2.length(); i++) {

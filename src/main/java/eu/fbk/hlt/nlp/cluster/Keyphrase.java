@@ -32,8 +32,8 @@ public class Keyphrase {
 	//private String id;
 	private String head;
 	private int headPosition;
-	private boolean containsAbbreviations;
-	private boolean containsPrepositions;
+	private int abbreviationsOccurrences;
+	private int prepositionsOccurrences;
 
 	/**
 	 * The constructor
@@ -94,24 +94,24 @@ public class Keyphrase {
 	}
 	
 	/**
-	 * Get if the keyphrase contains an abbreviation
+	 * Get the number of abbreviations in the keyphrase
 	 * 
-	 * @return true if it contains an abbreviation; false otherwise
+	 * @return the number of abbreviations
 	 */
-	public boolean containsAbbreviations() {
+	public int abbreviations() {
 
-		return this.containsAbbreviations;
+		return this.abbreviationsOccurrences;
 
 	}
 	
 	/**
-	 * Get if the keyphrase contains a preposition
+	 * Get the number of prepositions in the keyphrase
 	 * 
-	 * @return true if it contains a preposition; false otherwise
+	 * @return the number of prepositions
 	 */
-	public boolean containsPrepositions() {
+	public int prepositions() {
 
-		return this.containsPrepositions;
+		return this.prepositionsOccurrences;
 
 	}
 
@@ -142,6 +142,7 @@ public class Keyphrase {
 	public void add(int index, Token token) {
 
 		this.tokens[index] = token;
+		
 		if (this.head == null &&
 				token.getPoS() != null &&
 				token.getPoS().startsWith("S")) {
@@ -150,9 +151,10 @@ public class Keyphrase {
 				}
 		
 		if (token.isAbbreviation())
-			containsAbbreviations = true;
+			this.abbreviationsOccurrences++;
+		
 		else if (token.getPoS().startsWith("E"))
-			containsPrepositions = true;
+			this.prepositionsOccurrences++;
 		//id = id + "_" + token.getForm().toLowerCase();
 		//if (token.getText().toLowerCase().equals("allarme") || token.getText().toLowerCase().equals("sec"))
 			//System.out.println(id);

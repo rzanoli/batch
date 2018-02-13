@@ -59,7 +59,8 @@ public class Launcher {
 		
 		try {
 		
-			// load synonyms
+			// load synonyms used by one of the criteria
+			@SuppressWarnings("unused")
 			Keyphrases keyphrases = new Keyphrases();
 			
 			// crea l’oggetto che rappresenta la tastiera

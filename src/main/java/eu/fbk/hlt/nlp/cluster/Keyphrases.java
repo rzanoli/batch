@@ -466,6 +466,7 @@ public class Keyphrases {
 	 *            the file containing the keyphrases
 	 * @return the index of the keyphrases in input with their ids
 	 */
+	@Deprecated
 	private static Map<String, Keyphrase> readKDFiles(File file) throws Exception {
 
 		Map<String, Keyphrase> result = new HashMap<String, Keyphrase>();
