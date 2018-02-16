@@ -33,7 +33,7 @@ public class Synonym {
 	 * 
 	 * @return if key2 can be derived from key1
 	 */
-	public static boolean evaluate(Keyphrase key1, Keyphrase key2) {
+	public static boolean evaluate(Keyphrase key1, Keyphrase key2, Keyphrases keys) {
 
 		if (key1.length() != key2.length()) {
 			return false;
@@ -43,13 +43,14 @@ public class Synonym {
 		for (int i = 0; i < key1.length(); i++) {
 			if (key1.get(i).equalsFormIgnoreCase(key2.get(i)) || 
 					key1.get(i).equalsLemma(key2.get(i))) {}
-			else if (Keyphrases.synonyms(key1.get(i), key2.get(i)))
+			else if (key1.get(i).getPoS().equals(key2.get(i).getPoS()) &&
+					keys.synonyms(key1.get(i), key2.get(i)))
 				synonymsCount++;
 			else
 				return false;
 		}
 
-		return (synonymsCount != 0);
+		return (synonymsCount == 1);
 
 	}
 

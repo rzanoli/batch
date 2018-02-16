@@ -42,8 +42,9 @@ public class SingularPlural {
 			
 			if (key1.get(i).equalsFormIgnoreCase(key2.get(i))) {
 			}
-			else if ((key1.get(i).getPoS().equals("SS") && key2.get(i).getPoS().equals("SP")) ||
-					(key1.get(i).getPoS().equals("SP") && key2.get(i).getPoS().equals("SS"))) {
+			else if (key1.get(i).getLemma().equals(key2.get(i).getLemma()) &&
+					((key1.get(i).getPoS().endsWith("P") && key2.get(i).getPoS().endsWith("S")) ||
+					(key1.get(i).getPoS().endsWith("S") && key2.get(i).getPoS().endsWith("P")))) {
 				lemmaCount++;
 			} else {
 				return false;

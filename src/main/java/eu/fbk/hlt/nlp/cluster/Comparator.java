@@ -9,6 +9,7 @@ import eu.fbk.hlt.nlp.criteria.Equality;
 import eu.fbk.hlt.nlp.criteria.ModifierSwap;
 import eu.fbk.hlt.nlp.criteria.PrepositionalVariant;
 import eu.fbk.hlt.nlp.criteria.SingularPlural;
+import eu.fbk.hlt.nlp.criteria.Synonym;
 
 /**
  * This class represents a comparator that compares the keyphrases in input each
@@ -25,7 +26,7 @@ public class Comparator implements Runnable {
 	// true to stop the thread
 	private AtomicBoolean interrupted;
 	// the list of keyphrases in input
-	private Keyphrases kxs;
+	private Keyphrases keys;
 	// the graph structure that will contain the edged keyphrases
 	private Graph graph;
 
@@ -41,10 +42,10 @@ public class Comparator implements Runnable {
 	 *            the graph structure containing the created clusters of keyphrases
 	 * 
 	 */
-	public Comparator(AtomicBoolean interrupted, Keyphrases kxs, Graph graph) {
+	public Comparator(AtomicBoolean interrupted, Keyphrases keys, Graph graph) {
 
 		this.interrupted = interrupted;
-		this.kxs = kxs;
+		this.keys = keys;
 		this.graph = graph;
 
 	}
@@ -59,66 +60,69 @@ public class Comparator implements Runnable {
 
 			// get the next keyphrase to compare with all the
 			// other keyphrases
-			int i = kxs.next();
+			int i = keys.next();
 
 			// there are no other keyphrases to compare
-			if (i >= kxs.size())
+			if (i >= keys.size())
 				return;
 
 			// compare the keyphrase i with the other keyphrases j in the list
 			int j = i;
 			while (true) {
 				j++;
-				if (j == kxs.size())
+				if (j == keys.size())
 					j = 0;
 				if (j == i)// or Equality.evaluate(kx_i, kx_j)
 					break;
 
-				if (i < kxs.getOffset(i) && j < kxs.getOffset(i))
+				if (i < keys.getOffset(i) && j < keys.getOffset(i))
 					continue;
 
-				Keyphrase kx_i = kxs.get(i);
-				Keyphrase kx_j = kxs.get(j);
+				Keyphrase kx_i = keys.get(i);
+				Keyphrase kx_j = keys.get(j);
 
 				// apply the Equality criteria
 				if (Equality.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, Equality.id);
-					// System.out.println("Equality:" + kx_i.getText() + "\t" + kx_j.getText());
+					//System.out.println("Equality:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Abbreviation criteria
-			    else if (Abbreviation.evaluate(kx_i, kx_j)) {
+				else if (Abbreviation.evaluate(kx_i, kx_j)) {
 					// if (kxs.inDocument(kx_i, kx_j)) {
 					graph.add(i, j, Abbreviation.id);
-					// System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
+					//System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Acronym criteria
 				else if (Acronym.evaluate(kx_i, kx_j)) {
 					// if (kxs.inDocument(kx_i, kx_j)) {
 					graph.add(i, j, Acronym.id);
-					// System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
+					//System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
 					// }
 				}
 				// apply the Entailment criteria
 				else if (Entailment.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, Entailment.id);
-					// System.out.println("Entailment:" + kx_i.getText() + "\t" + kx_j.getText());
+					//System.out.println("Entailment:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Modifier Swap criteria
 				else if (ModifierSwap.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, ModifierSwap.id);
-					// System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
+					//System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Singular/Plural criteria
 				else if (SingularPlural.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, SingularPlural.id);
-					// System.out.println("SingularPlural:" + kx_i.getText() + "\t" +
-					// kx_j.getText());
+					//System.out.println("SingularPlural:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Singular/Plural criteria
 				else if (PrepositionalVariant.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, PrepositionalVariant.id);
-					// System.out.println("PrepositionalVariant :" + kx_i.getText() + "\t" +
-					// kx_j.getText());
+					//System.out.println("PrepositionalVariant:" + kx_i.getText() + "\t" + kx_j.getText());
+				}
+				// apply the Synonym criteria
+				else if (Synonym.evaluate(kx_i, kx_j, keys)) {
+					graph.add(i, j, Synonym.id);
+					//System.out.println("Synonym:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 			}
 

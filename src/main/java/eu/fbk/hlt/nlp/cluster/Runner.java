@@ -233,7 +233,7 @@ public class Runner {
 			LOGGER.info("Printing the clusters...");
 			// get the graph
 			String graphs = graph.BFS(0);
-			// LOGGER.info("\n" + graphs + "============================");
+			//LOGGER.info("\n" + "============================");
 			// and print the disconnected graphs (cluster) as single xml files
 			printGraphs(graphs, keyphrases, dirOut);
 

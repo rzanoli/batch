@@ -310,12 +310,13 @@ public class Keyphrases {
 
 			int lineNumber = 0;
 			while ((line = br.readLine()) != null) {
+				lineNumber++;
 				if (line.indexOf("_") != -1) {
 					continue;
 				}
-				String[] splitLine = line.split("\t");
+				String[] splitLine = line.split(" ");
 				for (int i = 0; i < splitLine.length; i++) {
-					String word_i = splitLine[i];
+					String word_i = splitLine[i].toLowerCase();
 					if (synonyms.containsKey(word_i)) {
 						HashSet<Integer> synonyms_words = synonyms.get(word_i);
 						synonyms_words.add(lineNumber);
@@ -344,7 +345,7 @@ public class Keyphrases {
 	 * 
 	 * @return true if they are synonyms; false otherwise
 	 */
-	public static boolean synonyms(Token token1, Token token2) {
+	public boolean synonyms(Token token1, Token token2) {
 
 		if (synonyms.get(token1.getLemma()) == null || synonyms.get(token2.getLemma()) == null)
 			return false;

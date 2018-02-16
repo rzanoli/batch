@@ -123,7 +123,7 @@ public class Launcher {
 						System.out.println("  YES, by rule:" + ModifierSwap.id + " [" + ModifierSwap.description + "]");
 					else if (SingularPlural.evaluate(key1, key2))
 						System.out.println("  YES, by rule:" + SingularPlural.id + " [" + SingularPlural.description + "]");
-					else if (Synonym.evaluate(key1, key2))
+					else if (Synonym.evaluate(key1, key2, keyphrases))
 						System.out.println("  YES, by rule:" + Synonym.id + " [" + Synonym.description + "]");
 					else if (PrepositionalVariant.evaluate(key1, key2))
 						System.out.println("  YES, by rule:" + PrepositionalVariant.id + " [" + PrepositionalVariant.description + "]");

@@ -75,7 +75,7 @@ public class CriteriaTest {
 		kx1.add(4, str1T5);
 		// final String str1 =
 		boolean result = Abbreviation.evaluate(kx1, kx2);
-		final boolean expected = true;
+		final boolean expected = false;
 		assertEquals(expected, result);
 	}
 

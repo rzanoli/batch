@@ -223,7 +223,8 @@ public class Graph {
 		for (int i = 0; i < this.v; i++) {
 			if (visited[i] == false) {
 				String graph_i = BFSUtil(i, visited);
-				// System.out.println(graph_i);
+				//System.out.println(graph_i);
+				//System.out.print(i + " ");
 				disconnectedGraphs.put(Integer.valueOf(i), graph_i);
 			}
 		}
@@ -241,7 +242,7 @@ public class Graph {
 		}
 
 		// System.out.print(graphsString.toString());
-		// System.out.println("====================");
+		//System.out.println("====================");
 
 		return graphsString.toString();
 
@@ -420,7 +421,7 @@ public class Graph {
 				"#Edges: " + (equality + abbreviation + acronym + entailment + modifierswap + singularplural + synonym)
 						+ " (equality:" + equality + " abbreviation:" + abbreviation + " " + "acronym:" + acronym
 						+ " entailment:" + entailment + " modifier swap:" + modifierswap + " singular/plural:"
-						+ singularplural + " sybonym:" + synonym + ")" + "\n");
+						+ singularplural + " synonym:" + synonym + ")" + "\n");
 
 		result.append("\nDistribution (#Graphs, #Vertices):\n");
 		Iterator<Integer> it = nodeDistribution.keySet().iterator();
