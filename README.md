@@ -21,7 +21,7 @@ e.g. fondazione for fondazioni (and viceversa)
 e.g. elezioni francesi 2017 for elezioni 2017 francesi
 - Entailment (id=9): check if two variants have the same semantic head and one has just one token less.
 - Equality (id=10): kj and kl are equal (i.e. same tokens in the same order). This is a special case, as occurrences of the same keyphrase are not considered as different variants, rather we collapse them into a single keyphrase type.
-- Sysnonym (id=11)
+- Synonym (id=11)
 - Prepositional Variant (id=12)
 
 
