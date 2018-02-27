@@ -236,6 +236,8 @@ public class Runner {
 			//LOGGER.info("\n" + "============================");
 			// and print the disconnected graphs (cluster) as single xml files
 			printGraphs(graphs, keyphrases, dirOut);
+			
+			//printGraphs2(graphs, keyphrases, dirOut);
 
 			long endTime_3 = System.currentTimeMillis();
 
@@ -375,6 +377,58 @@ public class Runner {
 				String relationRole = splitLine[2];
 				out.append(" <edge relation_role=\"" + relationRole + "\" source=\"" + kxSourceID + "\" " + "target=\""
 						+ kxTargetID + "\"/>\n");
+			}
+		}
+
+	}
+	
+	
+	/**
+	 * Print the disconnected graphs (clusters) into xml files
+	 * 
+	 * @param graphs
+	 *            the graph containing the disconnected graphs (clusters)
+	 * @param keyphrases
+	 *            the list of keyphrases in input
+	 * @param dirOut
+	 *            the directory to store output xml files
+	 */
+	public static void printGraphs2(String graphs, Keyphrases keyphrases, String dirOut) throws Exception {
+
+		StringBuilder out = new StringBuilder();
+		int nNodes = 0;
+		String[] splitGraphs = graphs.split("\n");
+		int root = -1;
+		for (int i = 0; i <= splitGraphs.length; i++) {
+			// System.out.println("======" + splitGraphs[i]);
+			if (i == splitGraphs.length || splitGraphs[i].equals("")) {
+
+				//Writer writer = new OutputStreamWriter(new FileOutputStream(dirOut + "/" + root + ".xml"), "UTF-8");
+				// System.out.println(dirOut + "/" + i + ".xml");
+				//BufferedWriter fout = new BufferedWriter(writer);
+				//fout.write("<KEC_graph id=\"" + root + "\"" + " node_count=\"" + nNodes + "\">\n");
+				//nNodes = 0;
+				if (nNodes != 1)
+					System.out.println(out.toString() + "\n");
+				//fout.write("</KEC_graph>\n");
+				out = new StringBuilder();
+				nNodes = 0;
+				//fout.close();
+				continue;
+
+			}
+			String[] splitLine = splitGraphs[i].split(" ");
+			if (splitLine.length == 1) {
+				nNodes++;
+			} else if (splitLine.length == 2) {
+				nNodes++;
+			} else {
+				int kxSourceID = Integer.parseInt(splitLine[0]);
+				int kxTargetID = Integer.parseInt(splitLine[1]);
+				String relationRole = splitLine[2];
+				//out.append(" <edge relation_role=\"" + relationRole + "\" source=\"" + kxSourceID + "\" " + "target=\""
+						//+ kxTargetID + "\"/>\n");
+				out.append(keyphrases.get(kxSourceID).getText() + "\t" + keyphrases.get(kxTargetID).getText() + "\t" + relationRole + "\n");
 			}
 		}
 

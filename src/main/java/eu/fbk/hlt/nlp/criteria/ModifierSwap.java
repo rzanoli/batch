@@ -7,11 +7,13 @@ import eu.fbk.hlt.nlp.cluster.Keyphrase;
 * Criteria: ModifierSwap
 * 
 * 
-* Definition (2017-11-22):
+* Definition (2018-02-22):
 * 
-* Modifier swap; 
 * check if all tokens are the same in different order and the head is the same (no permutation of the head)
-* e.g. elezioni francesi 2017 for elezioni 2017 francesi
+*
+* e.g.,
+* elezioni francesi 2017 for elezioni 2017 francesi
+*
 *
 */
 public class ModifierSwap {
@@ -55,7 +57,7 @@ public class ModifierSwap {
 			for (int j = 0; j < key2.length(); j++) {
 				if (visited[j] == true)
 					continue;
-				if (key1.get(i).equalsFormIgnoreCase(key2.get(j))) {
+				if (key1.get(i).getForm().equals(key2.get(j).getForm())) {
 					visited[j] = true;
 					found = true;
 					if (i != j)

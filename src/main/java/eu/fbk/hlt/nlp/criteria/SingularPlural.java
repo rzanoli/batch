@@ -4,14 +4,21 @@ import eu.fbk.hlt.nlp.cluster.Keyphrase;
 
 /*
 * 
-* Criteria: ModifierSwap
+* Criteria: SingularPlural
 * 
 * 
-* Definition (2017-11-22):
+* Definition (2018-02-22):
 * 
-* Singular/Plural;
-* check if two variants have the same lemma (based on the comp-morpho analysis of TextPro)
-* e.g. fondazione for fondazioni (and viceversa), amico for amica (in the first version we include also masculine/feminine)
+* check if two variants have the same lemma and one or more (at least one) is the plural of the other one (based on the comp-morpho analysis of TextPro)
+* e.g. 
+* 
+* fondazione for fondazioni (and viceversa), mensa dell'università for mensa delle università, 
+* sistema per la revisione for sistemi per le revisioni
+* 
+* NOT: 	
+* amico for amica
+* “della” for “del”
+* “della” for “al”
 *
 *
 */
@@ -37,21 +44,23 @@ public class SingularPlural {
 			return false;
 		}
 
-		int lemmaCount = 0;
+		int singularPluralCount = 0;
 		for (int i = 0; i < key1.length(); i++) {
 			
-			if (key1.get(i).equalsFormIgnoreCase(key2.get(i))) {
+			if (key1.get(i).getForm().equals(key2.get(i).getForm())) {
 			}
 			else if (key1.get(i).getLemma().equals(key2.get(i).getLemma()) &&
-					((key1.get(i).getPoS().endsWith("P") && key2.get(i).getPoS().endsWith("S")) ||
-					(key1.get(i).getPoS().endsWith("S") && key2.get(i).getPoS().endsWith("P")))) {
-				lemmaCount++;
-			} else {
+						key1.get(i).getPoS().substring(0,1).equals(key2.get(i).getPoS().substring(0,1)) && 
+						(key1.get(i).getPoS().endsWith("S") && key2.get(i).getPoS().endsWith("P") ||
+						key1.get(i).getPoS().endsWith("P")) && key2.get(i).getPoS().endsWith("S"))
+				singularPluralCount++;
+			else {
 				return false;
 			}
+		
 		}
 
-		return (lemmaCount != 0);
+		return (singularPluralCount != 0);
 
 	}
 

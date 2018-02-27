@@ -7,16 +7,17 @@ import eu.fbk.hlt.nlp.cluster.Keyphrase;
 * Criteria: Abbreviation
 * 
 * 
-* Definition (2017-11-22):
+* Definition (2018-02-22):
 * 
-* We consider an abbreviation any token which finishes with a dot and we check if it is a substring of some 
-* token in another keyphrase; kj and ki must have the same number of tokens in the same order, and the number of token must be more than 1, 
-* one token in kj can be the abbreviation of one token in ki
+* We consider an abbreviation any token which finishes with a dot and we check if it 
+* is a substring of some token not containing dots in another keyphrase; kj and ki must have 
+* the same number of tokens in the same order, and the number of tokens must be more than 1, one token 
+* in kj (and not more than one) can be the abbreviation of one token in ki
+* 
+* E.g.,
+* Prof. Magnini for Professor Magnini, 
+* B. Magnini for Bernardo Magnini
 *
-* 
-* E.g., 
-* Prof. for Professor, B. for Bernardo
-* Uni for University (not for the first version because it has no dot)
 */
 public class Abbreviation {
 
@@ -52,7 +53,7 @@ public class Abbreviation {
 					return false;
 				}
 			} else {
-				if (!key2.get(i).equalsFormIgnoreCase(key1.get(i)))
+				if (!key2.get(i).getForm().equals(key1.get(i).getForm()))
 					return false;
 			}
 		}

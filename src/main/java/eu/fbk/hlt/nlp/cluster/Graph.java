@@ -17,10 +17,11 @@ import java.util.Vector;
 import eu.fbk.hlt.nlp.criteria.Abbreviation;
 import eu.fbk.hlt.nlp.criteria.Acronym;
 import eu.fbk.hlt.nlp.criteria.Entailment;
-import eu.fbk.hlt.nlp.criteria.Equality;
 import eu.fbk.hlt.nlp.criteria.ModifierSwap;
 import eu.fbk.hlt.nlp.criteria.SingularPlural;
 import eu.fbk.hlt.nlp.criteria.Synonym;
+import eu.fbk.hlt.nlp.criteria.Article;
+import eu.fbk.hlt.nlp.criteria.PrepositionalVariant;
 
 /**
  * 
@@ -364,13 +365,14 @@ public class Graph {
 		int nNodes = 0;
 		int nTotNodes = 0;
 		int nRoots = 0;
-		int equality = 0;
+		int prepositionalVariant = 0;
 		int abbreviation = 0;
 		int entailment = 0;
 		int acronym = 0;
 		int modifierswap = 0;
 		int singularplural = 0;
 		int synonym = 0;
+		int article = 0;
 		Map<Integer, Integer> nodeDistribution = new TreeMap<Integer, Integer>();
 		for (int i = 0; i < splitGraphs.length; i++) {
 			String[] splitLine = splitGraphs[i].split(" ");
@@ -390,9 +392,7 @@ public class Graph {
 				nNodes++;
 				nTotNodes++;
 			} else { // edges
-				if (Integer.parseInt(splitLine[2]) == Equality.id)
-					equality++;
-				else if (Integer.parseInt(splitLine[2]) == Abbreviation.id)
+				if (Integer.parseInt(splitLine[2]) == Abbreviation.id)
 					abbreviation++;
 				else if (Integer.parseInt(splitLine[2]) == Acronym.id)
 					acronym++;
@@ -402,10 +402,12 @@ public class Graph {
 					modifierswap++;
 				else if (Integer.parseInt(splitLine[2]) == SingularPlural.id)
 					singularplural++;
-				else if (Integer.parseInt(splitLine[2]) == SingularPlural.id)
-					singularplural++;
-				else if (Integer.parseInt(splitLine[2]) == Synonym.id)
+				else if (Integer.parseInt(splitLine[2]) == PrepositionalVariant.id)
+					prepositionalVariant++;
+				else if (Integer.parseInt(splitLine[2]) == Synonym.id) 
 					synonym++;
+				else if (Integer.parseInt(splitLine[2]) == Article.id)
+					article++;
 			}
 		}
 		if (nodeDistribution.containsKey(nNodes)) {
@@ -418,10 +420,10 @@ public class Graph {
 		result.append("#Graphs (clusters) produced: " + nRoots + "\n");
 		result.append("#Vertices: " + nTotNodes + "\n");
 		result.append(
-				"#Edges: " + (equality + abbreviation + acronym + entailment + modifierswap + singularplural + synonym)
-						+ " (equality:" + equality + " abbreviation:" + abbreviation + " " + "acronym:" + acronym
+				"#Edges: " + (article + prepositionalVariant + abbreviation + acronym + entailment + modifierswap + singularplural + synonym)
+						+ " (article:" + article + " abbreviation:" + abbreviation + " " + "acronym:" + acronym
 						+ " entailment:" + entailment + " modifier swap:" + modifierswap + " singular/plural:"
-						+ singularplural + " synonym:" + synonym + ")" + "\n");
+						+ singularplural + " synonym:" + synonym + " prepositional variant:" + prepositionalVariant + ")" + "\n");
 
 		result.append("\nDistribution (#Graphs, #Vertices):\n");
 		Iterator<Integer> it = nodeDistribution.keySet().iterator();

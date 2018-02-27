@@ -111,9 +111,7 @@ public class Launcher {
 	
 					// Fire rules
 					// System.out.println("Can '" + str2 + "' be derived from '" + str1 + "'?");
-					if (Equality.evaluate(key1, key2))
-						System.out.println("  YES, by rule:" + Equality.id + " [" + Equality.description + "]");
-					else if (Abbreviation.evaluate(key1, key2))
+					if (Abbreviation.evaluate(key1, key2))
 						System.out.println("  YES, by rule:" + Abbreviation.id + " [" + Abbreviation.description + "]");
 					else if (Acronym.evaluate(key1, key2))
 						System.out.println("  YES, by rule:" + Acronym.id + " [" + Acronym.description + "]");

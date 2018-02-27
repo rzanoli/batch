@@ -33,7 +33,7 @@ public class Keyphrases {
 	// the list of unique keyphrases
 	private List<Keyphrase> innerList;
 
-	private static Map<String, HashSet<Integer>> synonyms;
+	private static Map<String, HashSet<String>> synonymsList;
 
 	// it is used by the Comparator class to move to the next keyphrase to compare
 	public int cursor;
@@ -53,7 +53,7 @@ public class Keyphrases {
 		this.masterList = new LinkedHashMap<Keyphrase, Set<String>>();
 		this.innerList = new ArrayList<Keyphrase>();
 		this.offset = 0;
-		synonyms = new HashMap<String, HashSet<Integer>>();
+		synonymsList = new HashMap<String, HashSet<String>>();
 		loadSynonyms();
 
 	}
@@ -289,11 +289,9 @@ public class Keyphrases {
 
 	}
 
+	
 	/**
-	 * Load the master list
-	 * 
-	 * @param fileName
-	 *            the file that contains the master list
+	 * Load synonyms extracted from MWN
 	 * 
 	 */
 
@@ -310,20 +308,48 @@ public class Keyphrases {
 
 			int lineNumber = 0;
 			while ((line = br.readLine()) != null) {
-				lineNumber++;
-				if (line.indexOf("_") != -1) {
+				//System.err.println(line);
+				// e.g., 
+				// input: ('n#09896331',' 5 V cinque ',NULL,NULL);
+				// output: n#09896331	5 V cinque
+				String[] lineSplit = line.split(",");
+				String synset = lineSplit[0].replace("(", "").replaceAll("'",  "");
+				//System.err.println("pippo=================================");
+				String synsetId = synset.split("#")[1];
+				String synsetPoS = synset.split("#")[0];
+					
+				String synonyms = lineSplit[1].replace("' ", "").replace(" '", "");
+				String[] synonymsSplit = synonyms.split(" ");
+
+				if (synonymsSplit.length == 1)
 					continue;
-				}
-				String[] splitLine = line.split(" ");
-				for (int i = 0; i < splitLine.length; i++) {
-					String word_i = splitLine[i].toLowerCase();
-					if (synonyms.containsKey(word_i)) {
-						HashSet<Integer> synonyms_words = synonyms.get(word_i);
-						synonyms_words.add(lineNumber);
-					} else {
-						HashSet<Integer> synonyms_words = new HashSet<Integer>();
-						synonyms_words.add(lineNumber);
-						synonyms.put(word_i, synonyms_words);
+				
+				for (int j = 0; j < synonymsSplit.length; j++) {
+					
+					String root_i = synonymsSplit[j].toLowerCase();
+					if (root_i.indexOf("_") != -1 || root_i.indexOf("\\") != -1)
+						continue;
+					
+					for (int i = 0; i < synonymsSplit.length; i++) {
+						String word_i = synonymsSplit[i].toLowerCase();
+						
+						if (word_i.indexOf("_") != -1 || word_i.indexOf("\\") != -1)
+							continue;
+						
+						if (j == i)
+							continue;
+						
+						if (synonymsList.containsKey(synsetPoS + "#" + root_i)) {
+							HashSet<String> entries = synonymsList.get(synsetPoS + "#" + root_i);
+							entries.add(synsetPoS + "#" + word_i);
+						} else {
+							HashSet<String> entries = new HashSet<String>();
+							entries.add(synsetPoS + "#" + word_i);
+							//System.out.println(synsetPoS + "#" + word_i + "\t" + synsetIdList);
+							synonymsList.put(synsetPoS + "#" + root_i, entries);
+							//System.out.println(synsetPoS + "#" + word_i + "\t" + synsetId);
+						}
+						
 					}
 				}
 			}
@@ -337,6 +363,7 @@ public class Keyphrases {
 
 	}
 
+	
 	/**
 	 * Say if 2 tokens are synonyms
 	 * 
@@ -347,18 +374,12 @@ public class Keyphrases {
 	 */
 	public boolean synonyms(Token token1, Token token2) {
 
-		if (synonyms.get(token1.getLemma()) == null || synonyms.get(token2.getLemma()) == null)
+		if (!synonymsList.containsKey(token1.getWordnetAnnotation()) || 
+				!synonymsList.containsKey(token2.getWordnetAnnotation()))
 			return false;
-
-		for (Integer item : synonyms.get(token1.getLemma())) {
-
-			if (synonyms.get(token2.getLemma()).contains(item))
-
-				return true;
-
-		}
-
-		return false;
+		
+		return
+			synonymsList.get(token1.getWordnetAnnotation()).contains(token2.getWordnetAnnotation());
 
 	}
 

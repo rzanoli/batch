@@ -11,12 +11,12 @@ import java.util.Objects;
  */
 public class Token {
 
-	// the form
-	private String form;
 	// the lowercase form
-	private String lowercaseForm;
+	private String form;
 	// the part-of-speech
 	private String PoS;
+	// the wordnet PoS
+	private String wordnetAnnotation;
 	// the lemma
 	private String lemma;
 	// the number of its characters
@@ -33,10 +33,9 @@ public class Token {
 
 	public Token(String form, String PoS, String lemma) {
 
-		this.form = form;
+		this.form = form.toLowerCase();
 		this.PoS = PoS;
 		this.lemma = lemma;
-		this.lowercaseForm = form.toLowerCase();
 
 		// compute the length of the token ('.' are not considered)
 		// is abbreviation
@@ -46,16 +45,26 @@ public class Token {
 		for (int i = 0; i < form.length(); i++) {
 			if (form.charAt(i) != '.') {
 				this.characters++;
-				if (Character.isUpperCase(form.charAt(i)))
-					capitalizedLetters++;
 			} else
 				dots++;
 		}
-		if (dots >= 2 || capitalizedLetters >= 2)
+		if ((dots >= 2 || this.characters >= 2) &&
+				(this.PoS.equals("SS") || this.PoS.equals("SP") || this.PoS.equals("SPN") || 
+						this.PoS.equals("YA") || this.PoS.equals("YF")))
 			this.isAcronym = true;
 		else if (dots == 1 && this.characters >= 1)
 			this.isAbbreviation = true;
-
+		
+		// assign the wordnet PoS
+		if (this.PoS.startsWith("S") || this.PoS.startsWith("Y")) //- n (noun): SS,SP,SN,SPN,YA,YF
+			this.wordnetAnnotation = "n#" + this.lemma;
+		else if (this.PoS.startsWith("V")) //- v (verb): VI,VI+E,VIY,VIY+E,VF,VF+E,VFY,VFY+E,VSP,VSP+E,VSPY,VSPY+E,VPP,VPP+E,VPPY,VPPY+E,VG,VG+E,VGY,VGY+E,VM,VM+E,VMY,VMY+E
+			this.wordnetAnnotation = "v#" + this.lemma;
+		else if (this.PoS.startsWith("A") || this.PoS.startsWith("D")) // - a (adjective): AS,AP,AN,DS,DP,DN  
+			this.wordnetAnnotation = "a#" + this.lemma;
+		else if (this.PoS.startsWith("B")) // - r (adverb): B
+			this.wordnetAnnotation = "r#" + this.lemma;
+		
 	}
 
 	/**
@@ -70,7 +79,7 @@ public class Token {
 	}
 
 	/**
-	 * lemma of the tokentext of the token
+	 * Get the lemma of the token
 	 * 
 	 * @return
 	 */
@@ -81,13 +90,24 @@ public class Token {
 	}
 
 	/**
-	 * lemma of the part-of-speech of the token
+	 * Get the part-of-speech of the token
 	 * 
 	 * @return
 	 */
 	public String getPoS() {
 
 		return this.PoS;
+
+	}
+	
+	/**
+	 * Get the Wordnet part-of-speech of the token
+	 * 
+	 * @return
+	 */
+	public String getWordnetAnnotation() {
+
+		return this.wordnetAnnotation;
 
 	}
 
@@ -123,7 +143,7 @@ public class Token {
 	 */
 	public char charAt(int index) {
 
-		return this.lowercaseForm.charAt(index);
+		return this.form.charAt(index);
 
 	}
 
@@ -134,7 +154,7 @@ public class Token {
 	 */
 	public char startWith() {
 
-		return this.lowercaseForm.charAt(0);
+		return this.form.charAt(0);
 
 	}
 
@@ -169,7 +189,7 @@ public class Token {
 		if (isAbbreviation == false || this.characters >= token.characters || startWith() != token.startWith())
 			return false;
 
-		return token.lowercaseForm.matches(this.lowercaseForm.replaceAll("\\.", "\\.+"));
+		return token.form.matches(this.form.replaceAll("\\.", "\\.+"));
 
 	}
 
@@ -182,7 +202,7 @@ public class Token {
 	 *            
 	 * @return if the 2 tokens have the same lemma
 	 */
-	public boolean equalsLemma(Token token) {
+	public boolean equalsLemma2(Token token) {
 
 		return this.lemma.equals(token.lemma);
 
@@ -197,28 +217,28 @@ public class Token {
 	 *            
 	 * @return if the 2 tokens have the same form
 	 */
-	public boolean equalsForm(Token token) {
+	public boolean equalsForm2(Token token) {
 
 		return this.characters == token.characters && 
 				this.form.equals(token.form);
 
 	}
-
+	
 	/**
-	 * Return true if the current token and the given token have the same form; the
-	 * comparison is case insensitive. False otherwise
+	 * Return true if the current token and the given token have the same form;
+	 * false otherwise
 	 * 
 	 * @param token
 	 *            the token to compare with the given token
 	 *            
 	 * @return if the 2 tokens have the same form
 	 */
-	public boolean equalsFormIgnoreCase(Token token) {
+	public boolean equalsPoS22(Token token) {
 
-		return this.characters == token.characters && 
-				this.lowercaseForm.equals(token.lowercaseForm);
+		return this.PoS.equals(token.PoS);
 
 	}
+
 
 	/**
 	 * If the current token is equal (they have the same form and PoS) to the token in input

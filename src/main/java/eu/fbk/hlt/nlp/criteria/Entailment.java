@@ -7,16 +7,15 @@ import eu.fbk.hlt.nlp.cluster.Keyphrase;
 * Criteria: Entailment
 * 
 * 
-* Definition (2017-11-22):
-
-* Check if two variants have the same semantic head and one has just one token less
+* Definition (2018-02-22):
+*
+* check if two variants have the same semantic head and one has just one token less
+*
+* e.g.,
 * 
-* 
-* E.g.,
-* 
-* Fondazione Kessler for Fondazione, Bernardo Magnini for Magnini
-* ufficio italiano del Consorzio for ufficio italiano (not for the first version because it is two tokens less)
+* Fondazione for Fondazione Kessler, Bernardo for Bernardo Magnini
 * Magnini for Bernardo Magnini (not  in Roberto’s first version because named entities follow the same rule as all other KPs)
+* ufficio italiano del Consorzio for ufficio italiano (not for the first version because it is two tokens less)
 *
 */
 public class Entailment {
@@ -48,7 +47,7 @@ public class Entailment {
 		int j = 0;
 		int nDifferences = 0;
 		while (i < key1.length() && j < key2.length()) {
-			if (key1.get(i).equalsFormIgnoreCase(key2.get(j))) {
+			if (key1.get(i).getForm().equals(key2.get(j).getForm())) {
 				i++;
 				j++;
 			} else {

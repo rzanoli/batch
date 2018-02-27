@@ -183,6 +183,7 @@ public class CriteriaTest {
 		assertEquals(expected, result);
 	}
 
+	/*
 	@Test
 	public void equality1Test() {
 		// final String str2 = "ufficio italiano del consorzio";
@@ -205,10 +206,10 @@ public class CriteriaTest {
 		kx1.add(1, str1T2);
 		kx1.add(2, str1T3);
 		kx1.add(3, str1T4);
-		boolean result = Equality.evaluate(kx1, kx2);
+		boolean result = Capitalization.evaluate(kx1, kx2);
 		final boolean expected = true;
 		assertEquals(expected, result);
-	}
+	}*/
 
 	@Test
 	public void modifierSwap1Test() {
