@@ -88,13 +88,14 @@ public class Comparator implements Runnable {
 					graph.add(i, j, Abbreviation.id);
 					//System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
+				/*
 				// apply the Acronym criteria
 				else if (Acronym.evaluate(kx_i, kx_j)) {
-					// if (kxs.inDocument(kx_i, kx_j)) {
+					//if (keys.inDocument(kx_i, kx_j)) {
 					graph.add(i, j, Acronym.id);
 					//System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
-					// }
-				}
+					//}
+				}*/
 				// apply the Entailment criteria
 				else if (Entailment.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, Entailment.id);
@@ -108,7 +109,7 @@ public class Comparator implements Runnable {
 				// apply the Singular/Plural criteria
 				else if (SingularPlural.evaluate(kx_i, kx_j)) {
 					graph.add(i, j, SingularPlural.id);
-					System.out.println("SingularPlural:" + kx_i.getText() + "\t" + kx_j.getText());
+					//System.out.println("SingularPlural:" + kx_i.getText() + "\t" + kx_j.getText());
 				}
 				// apply the Singular/Plural criteria
 				else if (PrepositionalVariant.evaluate(kx_i, kx_j)) {

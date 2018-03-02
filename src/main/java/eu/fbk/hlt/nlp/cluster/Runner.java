@@ -10,7 +10,11 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
@@ -333,6 +337,10 @@ public class Runner {
 	 */
 	public static void printGraphs(String graphs, Keyphrases keyphrases, String dirOut) throws Exception {
 
+		//Map<Integer,Integer> documentsDistributionInClusters = new HashMap<Integer,Integer>();
+		//Set<String> documentsCounts = new HashSet<String>();
+		
+		
 		StringBuilder out = new StringBuilder();
 		int nNodes = 0;
 		String[] splitGraphs = graphs.split("\n");
@@ -349,9 +357,21 @@ public class Runner {
 				fout.write(out.toString().substring(0, out.toString().length() - 1) + "\n");
 				fout.write("</KEC_graph>\n");
 				out = new StringBuilder();
+				
+				/*
+				if (documentsDistributionInClusters.containsKey(documentsCounts.size())) {
+					int freq = documentsDistributionInClusters.get(documentsCounts.size()).intValue() + 1;
+					documentsDistributionInClusters.put(documentsCounts.size(), freq);
+				}
+				else {
+					int freq = 1;
+					documentsDistributionInClusters.put(documentsCounts.size(), freq);
+				}
+				documentsCounts = new HashSet<String>();*/
+				
+				
 				fout.close();
 				continue;
-
 			}
 			String[] splitLine = splitGraphs[i].split(" ");
 			if (splitLine.length == 1) {
@@ -371,6 +391,15 @@ public class Runner {
 				out.append("  <text>" + kx.getText() + "</text>\n");
 				out.append("  <ids>" + keyphrases.getIDs(kx) + "</ids>\n");
 				out.append(" </node>\n");
+				
+				/*
+				String[] documents = keyphrases.getIDs(kx).split(" ");
+				for (int z = 0; z < documents.length; z++)
+					documentsCounts.add(documents[z]);
+					*/
+				
+				
+				
 			} else {
 				int kxSourceID = Integer.parseInt(splitLine[0]);
 				int kxTargetID = Integer.parseInt(splitLine[1]);
@@ -379,6 +408,12 @@ public class Runner {
 						+ kxTargetID + "\"/>\n");
 			}
 		}
+		
+		//System.out.println("Documents distriution in clusters");
+		//for (Integer freq : documentsDistributionInClusters.keySet()) {
+			//System.out.println(freq + "\t" + documentsDistributionInClusters.get(freq));
+		//}
+		//System.out.println("===================================");
 
 	}
 	

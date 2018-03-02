@@ -57,13 +57,13 @@ public class Token {
 		
 		// assign the wordnet PoS
 		if (this.PoS.startsWith("S") || this.PoS.startsWith("Y")) //- n (noun): SS,SP,SN,SPN,YA,YF
-			this.wordnetAnnotation = "n#" + this.lemma;
+			this.wordnetAnnotation = "n#" + this.lemma.toLowerCase();
 		else if (this.PoS.startsWith("V")) //- v (verb): VI,VI+E,VIY,VIY+E,VF,VF+E,VFY,VFY+E,VSP,VSP+E,VSPY,VSPY+E,VPP,VPP+E,VPPY,VPPY+E,VG,VG+E,VGY,VGY+E,VM,VM+E,VMY,VMY+E
-			this.wordnetAnnotation = "v#" + this.lemma;
+			this.wordnetAnnotation = "v#" + this.lemma.toLowerCase();
 		else if (this.PoS.startsWith("A") || this.PoS.startsWith("D")) // - a (adjective): AS,AP,AN,DS,DP,DN  
-			this.wordnetAnnotation = "a#" + this.lemma;
+			this.wordnetAnnotation = "a#" + this.lemma.toLowerCase();
 		else if (this.PoS.startsWith("B")) // - r (adverb): B
-			this.wordnetAnnotation = "r#" + this.lemma;
+			this.wordnetAnnotation = "r#" + this.lemma.toLowerCase();
 		
 	}
 

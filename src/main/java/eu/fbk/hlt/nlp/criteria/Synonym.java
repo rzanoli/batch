@@ -38,8 +38,6 @@ public class Synonym {
 			return false;
 		}
 
-		//String pippo = null;
-		
 		int synonymsCount = 0;
 		for (int i = 0; i < key1.length(); i++) {
 			if (key1.get(i).getForm().equals(key2.get(i).getForm())) {
@@ -47,19 +45,11 @@ public class Synonym {
 			else if (key1.get(i).getPoS().equals(key2.get(i).getPoS()) &&
 					keys.synonyms(key1.get(i), key2.get(i))) {
 				synonymsCount++;
-				//pippo = "trovato t:" + key1.getText() + "\t" + key2.getText();
-				//System.out.println("trovato:" + key1.getText() + "\t" + key2.getText());
-				//System.out.println("trovato t:" + key1.get(i).getForm() + "\t" + key2.get(i).getForm());
 			}
 			else
 				return false;
 		} 
 		
-		if (synonymsCount == 1) {
-			//System.out.println(synonymsCount);
-			//System.out.println(pippo);;
-		}
-
 		return (synonymsCount == 1);
 
 	}
