@@ -1,12 +1,15 @@
-package eu.fbk.hlt.nlp.criteria;
+package eu.fbk.hlt.nlp.criteria.it;
 
 import eu.fbk.hlt.nlp.cluster.Keyphrase;
 import eu.fbk.hlt.nlp.cluster.Keyphrases;
+import eu.fbk.hlt.nlp.cluster.Language;
+import eu.fbk.hlt.nlp.criteria.AbstractSynonymy;
 
 /*
 * 
 * Criteria: Synonyms
 * 
+* Version: 1.2
 * 
 * Definition (2018-02-22):
 * 
@@ -14,14 +17,16 @@ import eu.fbk.hlt.nlp.cluster.Keyphrases;
 * synonym of ki in MultiWordNet and the have the same PoS; the check is performed at the level of 
 * lemma (independently of number and gender)
 * 
+* @author zanoli
+* 
 */
-public class Synonym {
+public class Synonymy extends AbstractSynonymy {
 
-	// the criteria id
-	public static final int id = 11;
-	// the criteria description
-	public static final String description = "Synonym";
-
+	// version
+	public static final String version = "1.2";
+	// language
+	public static final Language language = Language.IT;
+	
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
 	 * 
@@ -29,6 +34,8 @@ public class Synonym {
 	 *            the keyphrase key1
 	 * @param key2
 	 *            the keyphrase key2
+	 * @param keys
+	 *  		  the keyphrases data structure containing the list of synonyms
 	 * 
 	 * @return if key2 can be derived from key1
 	 */

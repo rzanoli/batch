@@ -4,7 +4,15 @@ import java.util.Scanner;
 
 import eu.fbk.hlt.nlp.cluster.Keyphrase;
 import eu.fbk.hlt.nlp.cluster.Keyphrases;
+import eu.fbk.hlt.nlp.cluster.Language;
 import eu.fbk.hlt.nlp.cluster.Token;
+import eu.fbk.hlt.nlp.criteria.Abbreviation;
+import eu.fbk.hlt.nlp.criteria.Acronym;
+import eu.fbk.hlt.nlp.criteria.Entailment;
+import eu.fbk.hlt.nlp.criteria.ModifierSwap;
+import eu.fbk.hlt.nlp.criteria.it.PrepositionalVariant;
+import eu.fbk.hlt.nlp.criteria.it.SingularPlural;
+import eu.fbk.hlt.nlp.criteria.it.Synonymy;
 
 /**
  * This class can be used to test the implemented criteria from the command
@@ -86,7 +94,7 @@ public class Launcher {
 					String[] str1Tokens = str1.split(" ");
 					String[] str2Tokens = str2.split(" ");
 	
-					Keyphrase key1 = new Keyphrase(str1Tokens.length);
+					Keyphrase key1 = new Keyphrase(str1Tokens.length, Language.IT);
 					for (int i = 0; i < str1Tokens.length; i++) {
 						String form = str1Tokens[i].split("\\|")[0];
 						String PoS = str1Tokens[i].split("\\|")[1];
@@ -95,7 +103,7 @@ public class Launcher {
 						key1.add(i, token);
 					}
 					
-					Keyphrase key2 = new Keyphrase(str2Tokens.length);
+					Keyphrase key2 = new Keyphrase(str2Tokens.length, Language.IT);
 					for (int i = 0; i < str2Tokens.length; i++) {
 						String form = str2Tokens[i].split("\\|")[0];
 						String PoS = str2Tokens[i].split("\\|")[1];
@@ -121,8 +129,8 @@ public class Launcher {
 						System.out.println("  YES, by rule:" + ModifierSwap.id + " [" + ModifierSwap.description + "]");
 					else if (SingularPlural.evaluate(key1, key2))
 						System.out.println("  YES, by rule:" + SingularPlural.id + " [" + SingularPlural.description + "]");
-					else if (Synonym.evaluate(key1, key2, keyphrases))
-						System.out.println("  YES, by rule:" + Synonym.id + " [" + Synonym.description + "]");
+					else if (Synonymy.evaluate(key1, key2, keyphrases))
+						System.out.println("  YES, by rule:" + Synonymy.id + " [" + Synonymy.description + "]");
 					else if (PrepositionalVariant.evaluate(key1, key2))
 						System.out.println("  YES, by rule:" + PrepositionalVariant.id + " [" + PrepositionalVariant.description + "]");
 					

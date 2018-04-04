@@ -1,6 +1,10 @@
 package eu.fbk.hlt.nlp.cluster;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * KeyPhrases are expressions contained in a document which help understand and
@@ -28,12 +32,25 @@ import java.util.Arrays;
 public class Keyphrase {
 
 	//private int id;
+	// the keyphrase tokens
 	private Token[] tokens;
 	//private String id;
+	// the keyphrase text
+	private String text;
+	// the head of the keyphrase
 	private String head;
+	// if the head can be set ot it already exists
+	private boolean writableHead;
+	// the token position of the head in the keyphrase
 	private int headPosition;
+	// number of abbreviations in th ekeyphrase
 	private int abbreviationsOccurrences;
+	// number of prepositions in the keyphrase
 	private int prepositionsOccurrences;
+	// the keyphrase language
+	private Language language;
+	// babelnet synsets
+	private List<String> babelnetSynsets;
 
 	/**
 	 * The constructor
@@ -62,11 +79,14 @@ public class Keyphrase {
 	 * The constructor
 	 * 
 	 */
-	public Keyphrase(int size) {
+	public Keyphrase(int size, Language language) {
 
 		this.tokens = new Token[size];
 		//this.id = "";
 		this.headPosition = -1;
+		this.writableHead = true;
+		this.language = language;
+		this.babelnetSynsets = new ArrayList<String>();
 		
 	}
 
@@ -91,6 +111,17 @@ public class Keyphrase {
 
 		return tokens.length;
 
+	}
+	
+	/**
+	 * Get the language of the keyphrase
+	 * 
+	 * @return the language
+	 */
+	public Language getLanguage() {
+		
+		return this.language;
+		
 	}
 	
 	/**
@@ -143,12 +174,36 @@ public class Keyphrase {
 
 		this.tokens[index] = token;
 		
-		if (this.head == null &&
-				token.getPoS() != null &&
-				token.getPoS().startsWith("S")) {
+		// set the head of the keyphrase
+		//
+		// Italian language: the first noun of the keyphrase is the head
+		if (this.language == Language.IT) {
+			if (this.writableHead == true) {
+				if (token.getPoS() != null &&
+					token.getPoS().startsWith("S")) {
 					this.head = token.getForm();
+					//System.out.println(head);
 					this.headPosition = index;
+					this.writableHead = false;
 				}
+			}
+		}
+		// German language: the last noun of the keyphrase before the first preposition if present
+		// otherwise the last noun is the head;
+		else if(this.language == Language.DE) {
+			if (this.writableHead == true) {
+				if (token.getPoS() != null) {
+					if (token.getPoS().startsWith("AP")) { //AP: preposition
+						this.writableHead = false;
+					}
+					else if (token.getPoS().startsWith("N")) { //N: noun
+						this.head = token.getForm();
+						//System.out.println(head);
+						this.headPosition = index;
+					}
+				}
+			}
+		}
 		
 		if (token.isAbbreviation())
 			this.abbreviationsOccurrences++;
@@ -159,9 +214,12 @@ public class Keyphrase {
 		//if (token.getText().toLowerCase().equals("allarme") || token.getText().toLowerCase().equals("sec"))
 			//System.out.println(id);
 		
+		if (text == null)
+			text = token.getForm();
+		else
+			text = text + " " + token.getForm();
+		
 	}
-	
-	
 	
 	/**
 	 * Get the tokens in the keyphrase
@@ -194,14 +252,7 @@ public class Keyphrase {
 	 */
 	public String getText() {
 
-		StringBuilder buffer = new StringBuilder();
-		for (int i = 0; i < this.tokens.length; i++) {
-			buffer.append(this.tokens[i].getForm());
-			if (i < this.tokens.length -1)
-				buffer.append(" ");
-		}
-
-		return buffer.toString();
+		return this.text;
 		
 	}
 	
@@ -228,7 +279,27 @@ public class Keyphrase {
 		
 	}
 	
+	/**
+	 * Add the babelnet synset containing the keyphrase
+	 * 
+	 * @param synset the synset id
+	 */
+	public void addbabelnetSynset(String synset) {
+
+		this.babelnetSynsets.add(synset);
+		
+	}
 	
+	/**
+	 * Get the babel synsets iterator
+	 * 
+	 * @return the iterator
+	 */
+	public List<String> getbabelnetSynset() {
+
+		return this.babelnetSynsets;
+		
+	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -241,15 +312,19 @@ public class Keyphrase {
 		
 		//return this.id.equals(((Keyphrase) obj).id);
 		//return Equality.evaluate(this, (Keyphrase) obj);
-		return Arrays.equals(this.tokens, ((Keyphrase) obj).tokens);
+		return this.language.name().equals(((Keyphrase) obj).language.name()) && 
+				Arrays.equals(this.tokens, ((Keyphrase) obj).tokens);
+		//return Arrays.equals(this.tokens, ((Keyphrase) obj).tokens);
 
 	}
+	
 
 	@Override
 	public int hashCode() {
 
 		//return id.hashCode();
-		return Arrays.hashCode(tokens);
+		return Objects.hash(this.language.name(), Arrays.hashCode(tokens));
+		//return Arrays.hashCode(tokens);
 
 	}
 

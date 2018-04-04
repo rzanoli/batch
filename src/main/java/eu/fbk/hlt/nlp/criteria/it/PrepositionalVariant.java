@@ -1,10 +1,14 @@
-package eu.fbk.hlt.nlp.criteria;
+package eu.fbk.hlt.nlp.criteria.it;
 
 import eu.fbk.hlt.nlp.cluster.Keyphrase;
+import eu.fbk.hlt.nlp.cluster.Language;
+import eu.fbk.hlt.nlp.criteria.AbstractPrepositionalVariant;
 
 /*
 * 
 * Criteria: PrepositionalVariant
+* 
+* Version: 1.2
 * 
 * Definition (2018-02-22):
 * 
@@ -20,15 +24,15 @@ import eu.fbk.hlt.nlp.cluster.Keyphrase;
 * mensa dell’università for mensa delle università (different PoS: ES and EP) Criterion 4 sing/plur applies instead
 * mensa dell’università for mensa alle università (different PoS: ES and EP)
 * regole di gioco for regole del gioco (same lemma: di) - this is covered by criterion 12
+* 
+* @author zanoli
 *
 */
-public class PrepositionalVariant {
+public class PrepositionalVariant extends AbstractPrepositionalVariant {
 
-	// the criteria id
-	public static final int id = 1;
-	// the criteria description
-	public static final String description = "PrepositionalVariant";
-
+	// language
+	public static final Language language = Language.IT;
+	
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
 	 * 

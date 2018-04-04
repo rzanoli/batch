@@ -193,9 +193,10 @@ public class Runner {
 
 			} else { // clustering from scratch
 
-				LOGGER.info("Loading keyphrases...");
+				LOGGER.info("Initializing keyphrases...");
 				// load the the keyphrases produced by KD
 				keyphrases = new Keyphrases();
+				LOGGER.info("Loading keyphrases...");
 				keyphrases.read(dirIn);
 
 				// keyphrases.printInnerList();
@@ -337,8 +338,8 @@ public class Runner {
 	 */
 	public static void printGraphs(String graphs, Keyphrases keyphrases, String dirOut) throws Exception {
 
-		//Map<Integer,Integer> documentsDistributionInClusters = new HashMap<Integer,Integer>();
-		//Set<String> documentsCounts = new HashSet<String>();
+		Map<Integer,Integer> documentsDistributionInClusters = new HashMap<Integer,Integer>();
+		Set<String> documentsCounts = new HashSet<String>();
 		
 		
 		StringBuilder out = new StringBuilder();
@@ -358,7 +359,7 @@ public class Runner {
 				fout.write("</KEC_graph>\n");
 				out = new StringBuilder();
 				
-				/*
+				
 				if (documentsDistributionInClusters.containsKey(documentsCounts.size())) {
 					int freq = documentsDistributionInClusters.get(documentsCounts.size()).intValue() + 1;
 					documentsDistributionInClusters.put(documentsCounts.size(), freq);
@@ -367,7 +368,7 @@ public class Runner {
 					int freq = 1;
 					documentsDistributionInClusters.put(documentsCounts.size(), freq);
 				}
-				documentsCounts = new HashSet<String>();*/
+				documentsCounts = new HashSet<String>();
 				
 				
 				fout.close();
@@ -382,6 +383,12 @@ public class Runner {
 				out.append("  <text>" + kx.getText() + "</text>\n");
 				out.append("  <ids>" + keyphrases.getIDs(kx) + "</ids>\n");
 				out.append(" </node>\n");
+				
+				String[] documents = keyphrases.getIDs(kx).split(" ");
+				for (int z = 0; z < documents.length; z++)
+					documentsCounts.add(documents[z]);
+				
+				
 			} else if (splitLine.length == 2) {
 				nNodes++;
 				int kxID = Integer.parseInt(splitLine[0]);
@@ -392,11 +399,11 @@ public class Runner {
 				out.append("  <ids>" + keyphrases.getIDs(kx) + "</ids>\n");
 				out.append(" </node>\n");
 				
-				/*
+				
 				String[] documents = keyphrases.getIDs(kx).split(" ");
 				for (int z = 0; z < documents.length; z++)
 					documentsCounts.add(documents[z]);
-					*/
+					
 				
 				
 				
@@ -409,11 +416,11 @@ public class Runner {
 			}
 		}
 		
-		//System.out.println("Documents distriution in clusters");
-		//for (Integer freq : documentsDistributionInClusters.keySet()) {
-			//System.out.println(freq + "\t" + documentsDistributionInClusters.get(freq));
-		//}
-		//System.out.println("===================================");
+		System.out.println("Documents distriution in clusters");
+		for (Integer freq : documentsDistributionInClusters.keySet()) {
+			System.out.println(freq + "\t" + documentsDistributionInClusters.get(freq));
+		}
+		System.out.println("===================================");
 
 	}
 	

@@ -1,11 +1,14 @@
-package eu.fbk.hlt.nlp.criteria;
+package eu.fbk.hlt.nlp.criteria.it;
 
 import eu.fbk.hlt.nlp.cluster.Keyphrase;
+import eu.fbk.hlt.nlp.cluster.Language;
+import eu.fbk.hlt.nlp.criteria.AbstractSingularPlural;
 
 /*
 * 
 * Criteria: SingularPlural
 * 
+* Version: 1.2
 * 
 * Definition (2018-02-22):
 * 
@@ -20,15 +23,16 @@ import eu.fbk.hlt.nlp.cluster.Keyphrase;
 * “della” for “del”
 * “della” for “al”
 *
+* @author zanoli
 *
 */
-public class SingularPlural {
+public class SingularPlural extends AbstractSingularPlural {
 
-	// the criteria id
-	public static final int id = 4;
-	// the criteria description
-	public static final String description = "SingularPlural";
-
+	// version
+	public static final String version = "1.2";
+	// language
+	public static final Language language = Language.IT;
+	
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
 	 * 

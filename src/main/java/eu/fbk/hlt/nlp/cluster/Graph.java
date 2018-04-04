@@ -16,12 +16,12 @@ import java.util.Vector;
 
 import eu.fbk.hlt.nlp.criteria.Abbreviation;
 import eu.fbk.hlt.nlp.criteria.Acronym;
+import eu.fbk.hlt.nlp.criteria.it.Article;
 import eu.fbk.hlt.nlp.criteria.Entailment;
 import eu.fbk.hlt.nlp.criteria.ModifierSwap;
-import eu.fbk.hlt.nlp.criteria.SingularPlural;
-import eu.fbk.hlt.nlp.criteria.Synonym;
-import eu.fbk.hlt.nlp.criteria.Article;
-import eu.fbk.hlt.nlp.criteria.PrepositionalVariant;
+import eu.fbk.hlt.nlp.criteria.it.PrepositionalVariant;
+import eu.fbk.hlt.nlp.criteria.it.SingularPlural;
+import eu.fbk.hlt.nlp.criteria.it.Synonymy;
 
 /**
  * 
@@ -371,7 +371,8 @@ public class Graph {
 		int acronym = 0;
 		int modifierswap = 0;
 		int singularplural = 0;
-		int synonym = 0;
+		int synonymy = 0;
+		int equality = 0;
 		int article = 0;
 		Map<Integer, Integer> nodeDistribution = new TreeMap<Integer, Integer>();
 		for (int i = 0; i < splitGraphs.length; i++) {
@@ -404,8 +405,8 @@ public class Graph {
 					singularplural++;
 				else if (Integer.parseInt(splitLine[2]) == PrepositionalVariant.id)
 					prepositionalVariant++;
-				else if (Integer.parseInt(splitLine[2]) == Synonym.id) 
-					synonym++;
+				else if (Integer.parseInt(splitLine[2]) == Synonymy.id) 
+					synonymy++;
 				else if (Integer.parseInt(splitLine[2]) == Article.id)
 					article++;
 			}
@@ -420,10 +421,11 @@ public class Graph {
 		result.append("#Graphs (clusters) produced: " + nRoots + "\n");
 		result.append("#Vertices: " + nTotNodes + "\n");
 		result.append(
-				"#Edges: " + (article + prepositionalVariant + abbreviation + acronym + entailment + modifierswap + singularplural + synonym)
+				"#Edges: " + (article + prepositionalVariant + abbreviation + acronym + entailment + modifierswap + singularplural + synonymy + equality)
 						+ " (article:" + article + " abbreviation:" + abbreviation + " " + "acronym:" + acronym
 						+ " entailment:" + entailment + " modifier swap:" + modifierswap + " singular/plural:"
-						+ singularplural + " synonym:" + synonym + " prepositional variant:" + prepositionalVariant + ")" + "\n");
+						+ singularplural + " synonym:" + synonymy + " prepositional variant:" + prepositionalVariant 
+						+ "equality:" + equality + ")" + "\n");
 
 		result.append("\nDistribution (#Graphs, #Vertices):\n");
 		Iterator<Integer> it = nodeDistribution.keySet().iterator();

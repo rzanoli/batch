@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -18,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import eu.fbk.hlt.nlp.babelnet.BabelnetWrapper;
+
 
 /**
  * This class represents the list of keyphrases in input to cluster.
@@ -44,6 +47,11 @@ public class Keyphrases {
 	// comparators can compare the new keyphrases with the
 	// ones that were already analyzed in a previous run.
 	private int offset = 0;
+	// The BabelNet class is used as the entry point to access all the content available 
+	// in BabelNet. The class is implemented through the singleton pattern, where we restrict 
+	// the instantiation of the BabelNet class to one object. You can obtain a reference to the 
+	// only instance of the BabelNet class with the following line
+	private BabelnetWrapper bn;
 
 	/**
 	 * The constructor
@@ -54,7 +62,8 @@ public class Keyphrases {
 		this.innerList = new ArrayList<Keyphrase>();
 		this.offset = 0;
 		synonymsList = new HashMap<String, HashSet<String>>();
-		loadSynonyms();
+		loadSynonymsIT();
+		bn = new BabelnetWrapper();
 
 	}
 
@@ -85,20 +94,46 @@ public class Keyphrases {
 	 *            the document id where the keyphrase appears
 	 * @param kx
 	 *            the keyphrase
+	 * @param addBabelnetSynsets 
+	 * 			if the keyphrase already contains the babelnet synsets this parameter is set to false;
+	 * 			otherwise true; basically during the incremental clustering phase and when the tool is reading
+	 * 			the clustered keyphrases that already contains the babelnet synsets the parameter is set to
+	 * 			false. 
 	 */
-	public void add(String id, Keyphrase kx) {
-
+	private void add(String id, Keyphrase kx, boolean addBabelnetSynsets) {
+		
 		nKeyphrases++;
+		
+		//if (nKeyphrases % 10000 == 0)
+			//System.out.println(new Date() + " " + nKeyphrases + "\t");
 
 		if (!masterList.containsKey(kx)) {
+			//System.out.println("nuova:" + nKeyphrases);
 			Set<String> ids = new TreeSet<String>();
 			ids.add(id);
+			
+			if (addBabelnetSynsets == true) {
+				//System.out.println((new Date()).getTime());
+				// add babelnet synsets
+				List<Language> targetLanguages = new ArrayList<Language>();
+				targetLanguages.add(Language.IT);
+				targetLanguages.add(Language.DE);
+				targetLanguages.add(Language.EN);
+				List<String> babelnetSynsets = this.getSynsets(kx.getText(), kx.getLanguage(), targetLanguages);
+				for (String synset : babelnetSynsets)
+					kx.addbabelnetSynset(synset);
+				//System.out.println((new Date()).getTime());
+			}
+			
 			masterList.put(kx, ids);
 			// kx.setIkD(innerList.size());
 			innerList.add(kx);
+			//System.out.println("nuova");
 		} else {
 			Set<String> ids = masterList.get(kx);
 			ids.add(id);
+			//System.out.println("trovata:" + nKeyphrases);
+			//System.out.println("vista");
 			masterList.put(kx, ids);
 		}
 
@@ -210,11 +245,15 @@ public class Keyphrases {
 
 			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8"));
 
-			Iterator<Keyphrase> kx_it = masterList.keySet().iterator();
 			int counter = 0;
+			Iterator<Keyphrase> kx_it = masterList.keySet().iterator();
 			while (kx_it.hasNext()) {
 				Keyphrase kx = kx_it.next();
-				bw.write(counter + "\t");
+				
+				// counter language
+				bw.write(counter + "\t" + kx.getLanguage() + "\t");
+				
+				// form pos lemma
 				Token[] tokens = kx.getTokens();
 				for (int i = 0; i < tokens.length; i++) {
 					Token token = tokens[i];
@@ -225,6 +264,18 @@ public class Keyphrases {
 					if (i < tokens.length - 1)
 						bw.write(" ");
 				}
+				
+				bw.write("\t");
+				// babelnet synsets
+				Iterator<String> synsetIt = kx.getbabelnetSynset().iterator();
+				while(synsetIt.hasNext()) {
+					String synset = synsetIt.next();
+					bw.write(synset);
+					if (synsetIt.hasNext())
+						bw.write(" ");
+				}
+				
+				// id
 				bw.write("\t");
 				Set<String> ids = masterList.get(kx);
 				Iterator<String> id_it = ids.iterator();
@@ -233,6 +284,7 @@ public class Keyphrases {
 					if (id_it.hasNext())
 						bw.write(" ");
 				}
+				
 				bw.write("\n");
 				counter++;
 			}
@@ -265,8 +317,20 @@ public class Keyphrases {
 
 			while ((line = br.readLine()) != null) {
 				String[] splitLine = line.split("\t");
-				String[] tokens = splitLine[1].split(" ");
-				Keyphrase kx = new Keyphrase(tokens.length);
+				
+				String languageString = splitLine[1];
+				// set the language of the keyphrases
+				Language language = null;
+				if (languageString.equals("IT"))
+					language = Language.IT;
+				else if (languageString.equals("DE"))
+					language = Language.DE;
+				else if (languageString.indexOf("EN") != -1)
+					language = Language.EN;
+					
+				// set form, pos and lemma
+				String[] tokens = splitLine[2].split(" ");
+				Keyphrase kx = new Keyphrase(tokens.length, language);
 				for (int i = 0; i < tokens.length; i++) {
 					String[] token_i = tokens[i].split("_#_");
 					String form = token_i[0];
@@ -275,9 +339,18 @@ public class Keyphrases {
 					Token token = new Token(form, PoS, lemma);
 					kx.add(i, token);
 				}
-				String[] ids = splitLine[2].split(" ");
+				
+				// set babelnet synsets
+				String[] synsets = splitLine[3].split(" ");
+				for (int i = 0; i < synsets.length; i++) {
+					String synset = synsets[i];
+					kx.addbabelnetSynset(synset);
+				}
+				
+				// set id
+				String[] ids = splitLine[4].split(" ");
 				for (int i = 0; i < ids.length; i++)
-					add(ids[i], kx);
+					add(ids[i], kx, false);
 			}
 
 		} finally {
@@ -295,7 +368,7 @@ public class Keyphrases {
 	 * 
 	 */
 
-	private void loadSynonyms() throws Exception {
+	private void loadSynonymsIT() throws Exception {
 
 		BufferedReader br = null;
 
@@ -306,7 +379,6 @@ public class Keyphrases {
 
 			String line;
 
-			int lineNumber = 0;
 			while ((line = br.readLine()) != null) {
 				//System.err.println(line);
 				// e.g., 
@@ -315,7 +387,7 @@ public class Keyphrases {
 				String[] lineSplit = line.split(",");
 				String synset = lineSplit[0].replace("(", "").replaceAll("'",  "");
 				//System.err.println("pippo=================================");
-				String synsetId = synset.split("#")[1];
+				//String synsetId = synset.split("#")[1];
 				String synsetPoS = synset.split("#")[0];
 					
 				String synonyms = lineSplit[1].replace("' ", "").replace(" '", "");
@@ -362,6 +434,35 @@ public class Keyphrases {
 		}
 
 	}
+	
+
+	/**
+	 * A BabelSynset is a set of multilingual lexicalizations that are synonyms expressing a given 
+	 * concept or named entity. For instance, the synset for car in the motorcar sense looks like this. 
+	 * After creating the BabelNet object which we call bn , we can use its methods to retrieve one 
+	 * or many BabelSynset objects. For instance, to retrieve all the synsets containing 
+	 * car we can call the BabelNet#getSynsets method.
+	 * 
+	 * @param key
+	 * @param sourceLanguage
+	 * @param targetLanguage
+	 * @return
+	 */
+	private List<String> getSynsets(String key, Language sourceLanguage, List<Language> targetLanguages) {
+		
+		List<String> result = null;
+		
+		String source = sourceLanguage.toString();
+		List<String> target = new ArrayList<String>();
+		for (Language language : targetLanguages)
+			target.add(language.toString());
+		
+		result = bn.getSynsets(key, source, target);
+		
+		return result;
+		
+	}
+	
 
 	
 	/**
@@ -446,7 +547,8 @@ public class Keyphrases {
 	}
 
 	/**
-	 * Load the keyphrases produced by KD
+	 * Load the keyphrases produced by KD; it reads all the iob files
+	 * containing the keyphrases.
 	 * 
 	 * @param dirName
 	 *            the directory containing the files produced by KD
@@ -471,58 +573,12 @@ public class Keyphrases {
 					while (it.hasNext()) {
 						String kxID = it.next();
 						Keyphrase kx = kxs.get(kxID);
-						add(kxID, kx);
+						add(kxID, kx, true);
 					}
 				}
 			}
 
 		}
-
-	}
-
-	/**
-	 * Read the file produced by KD and containing the keyphrases of the current
-	 * document.
-	 * 
-	 * @param file
-	 *            the file containing the keyphrases
-	 * @return the index of the keyphrases in input with their ids
-	 */
-	@Deprecated
-	private static Map<String, Keyphrase> readKDFiles(File file) throws Exception {
-
-		Map<String, Keyphrase> result = new HashMap<String, Keyphrase>();
-
-		BufferedReader br = null;
-		String line = null;
-
-		try {
-
-			br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
-
-			int lineNumber = 0;
-			while ((line = br.readLine()) != null) {
-
-				// System.out.println(sCurrentLine);
-				lineNumber++;
-				if (lineNumber == 1)
-					continue;
-
-				String[] splitLine = line.split("\t");
-				String kxID = file.getName() + "_" + Integer.parseInt(splitLine[0]);
-				String[] kxText = splitLine[1].split(" ");
-				Keyphrase kx = new Keyphrase(kxText.length);
-				for (int i = 0; i < kxText.length; i++)
-					kx.add(i, new Token(kxText[i], null, null));
-				result.put(kxID, kx);
-
-			}
-		} finally {
-			if (br != null)
-				br.close();
-		}
-
-		return result;
 
 	}
 
@@ -550,8 +606,9 @@ public class Keyphrases {
 	// }
 
 	/**
-	 * Read the file produced by TextPro and enriched with a new column containing
-	 * the kephrases recognized by KD
+	 * Read the file produced by TextPro/TreeTagger and enriched with a new column containing
+	 * the kephrases recognized by KD; the information about the language of the document is shown in 
+	 * the file name, i.e., IT, DE, EN. This information is used to set the keyphrase language.
 	 * 
 	 * @param file
 	 *            the file containing the keyphrases
@@ -567,6 +624,15 @@ public class Keyphrases {
 		try {
 
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
+			
+			// set the language of the keyphrases
+			Language language = null;
+			if (file.getName().indexOf("IT") != -1)
+				language = Language.IT;
+			else if (file.getName().indexOf("DE") != -1)
+				language = Language.DE;
+			else if (file.getName().indexOf("EN") != -1)
+				language = Language.EN;
 
 			List<Token> tokenBuffer = new ArrayList<Token>();
 
@@ -579,7 +645,8 @@ public class Keyphrases {
 					kxString = splitLine[3];
 				if (kxString.equals("") || kxString.equals("O")) { // tag: O OR End Of Line
 					if (tokenBuffer.size() > 0) {
-						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size());
+						//System.out.println(language);
+						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size(), language);
 						boolean containsName = false;
 						for (int i = 0; i < tokenBuffer.size(); i++) {
 							keyphrase.add(i, tokenBuffer.get(i));
@@ -595,7 +662,7 @@ public class Keyphrases {
 					}
 				} else if (kxString.indexOf("B-") != -1) {
 					if (tokenBuffer.size() > 0) {
-						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size());
+						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size(), language);
 						boolean containsName = false;
 						for (int i = 0; i < tokenBuffer.size(); i++) {
 							keyphrase.add(i, tokenBuffer.get(i));

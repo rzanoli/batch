@@ -2,14 +2,7 @@ package eu.fbk.hlt.nlp.cluster;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import eu.fbk.hlt.nlp.criteria.Abbreviation;
-import eu.fbk.hlt.nlp.criteria.Acronym;
-import eu.fbk.hlt.nlp.criteria.Entailment;
-import eu.fbk.hlt.nlp.criteria.ModifierSwap;
-import eu.fbk.hlt.nlp.criteria.PrepositionalVariant;
-import eu.fbk.hlt.nlp.criteria.SingularPlural;
-import eu.fbk.hlt.nlp.criteria.Synonym;
-import eu.fbk.hlt.nlp.criteria.Article;
+
 
 /**
  * This class represents a comparator that compares the keyphrases in input each
@@ -29,7 +22,6 @@ public class Comparator implements Runnable {
 	private Keyphrases keys;
 	// the graph structure that will contain the edged keyphrases
 	private Graph graph;
-
 
 	/**
 	 * The constructor
@@ -81,51 +73,122 @@ public class Comparator implements Runnable {
 				Keyphrase kx_i = keys.get(i);
 				Keyphrase kx_j = keys.get(j);
 
-				
-				// apply the Abbreviation criteria
-				if (Abbreviation.evaluate(kx_i, kx_j)) {
-					// if (kxs.inDocument(kx_i, kx_j)) {
-					graph.add(i, j, Abbreviation.id);
-					//System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
-				}
 				/*
-				// apply the Acronym criteria
-				else if (Acronym.evaluate(kx_i, kx_j)) {
-					//if (keys.inDocument(kx_i, kx_j)) {
-					graph.add(i, j, Acronym.id);
-					//System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
-					//}
+				// apply the Equality criteria
+				if (Equality.evaluate(kx_i, kx_j)) {
+					// if (kxs.inDocument(kx_i, kx_j)) {
+					graph.add(i, j, Equality.id);
+					//System.out.println("Equality:" + kx_i.getText() + "\t" + kx_j.getText());
 				}*/
-				// apply the Entailment criteria
-				else if (Entailment.evaluate(kx_i, kx_j)) {
-					graph.add(i, j, Entailment.id);
-					//System.out.println("Entailment:" + kx_i.getText() + "\t" + kx_j.getText());
+				
+				
+				// 2 keyphrases and same language
+				if (kx_i.getLanguage() == kx_j.getLanguage()) {
+					// language: IT
+					if (kx_i.getLanguage() == Language.IT) {
+						
+						// apply the Abbreviation criteria
+						if (eu.fbk.hlt.nlp.criteria.Abbreviation.evaluate(kx_i, kx_j)) {
+							// if (kxs.inDocument(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.Abbreviation.id);
+							//System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						/*
+						// apply the Acronym criteria
+						else if (eu.fbk.hlt.nlp.criteria.it.Acronym.evaluate(kx_i, kx_j)) {
+							//if (keys.inDocument(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.it.Acronym.id);
+							//System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
+							//}
+						}*/
+						// apply the Entailment criteria
+						else if (eu.fbk.hlt.nlp.criteria.Entailment.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.Entailment.id);
+							//System.out.println("Entailment:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Modifier Swap criteria
+						else if (eu.fbk.hlt.nlp.criteria.ModifierSwap.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.ModifierSwap.id);
+							//System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Singular/Plural criteria
+						else if (eu.fbk.hlt.nlp.criteria.it.SingularPlural.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.it.SingularPlural.id);
+							//System.out.println("SingularPlural:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Singular/Plural criteria
+						else if (eu.fbk.hlt.nlp.criteria.it.PrepositionalVariant.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.it.PrepositionalVariant.id);
+							//System.out.println("PrepositionalVariant:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Synonym criteria
+						else if (eu.fbk.hlt.nlp.criteria.it.Synonymy.evaluate(kx_i, kx_j, keys)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.it.Synonymy.id);
+							//System.out.println("Synonym:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Synonym criteria
+						else if (eu.fbk.hlt.nlp.criteria.it.Article.evaluate(kx_i, kx_j, keys)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.it.Article.id);
+							//System.out.println("Article:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+					}
+					// language: DE
+					else if (kx_i.getLanguage() == Language.DE) {
+						
+						// apply the Abbreviation criteria
+						if (eu.fbk.hlt.nlp.criteria.Abbreviation.evaluate(kx_i, kx_j)) {
+							// if (kxs.inDocument(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.Abbreviation.id);
+							//System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						/*
+						// apply the Acronym criteria
+						else if (eu.fbk.hlt.nlp.criteria.it.Acronym.evaluate(kx_i, kx_j)) {
+							//if (keys.inDocument(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.it.Acronym.id);
+							//System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
+							//}
+						}*/
+						// apply the Entailment criteria
+						else if (eu.fbk.hlt.nlp.criteria.Entailment.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.Entailment.id);
+							//System.out.println("Entailment:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Modifier Swap criteria
+						else if (eu.fbk.hlt.nlp.criteria.ModifierSwap.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.ModifierSwap.id);
+							//System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Singular/Plural criteria
+						else if (eu.fbk.hlt.nlp.criteria.de.SingularPlural.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.de.SingularPlural.id);
+							//System.out.println("SingularPlural:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Singular/Plural criteria
+						else if (eu.fbk.hlt.nlp.criteria.de.PrepositionalVariant.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.de.PrepositionalVariant.id);
+							//System.out.println("PrepositionalVariant:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Synonym criteria
+						else if (eu.fbk.hlt.nlp.criteria.de.Article.evaluate(kx_i, kx_j, keys)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.de.Article.id);
+							//System.out.println("Article:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						
+					}
+					// language: EN
+					else if (kx_i.getLanguage() == Language.EN) {
+						
+					}
+					
 				}
-				// apply the Modifier Swap criteria
-				else if (ModifierSwap.evaluate(kx_i, kx_j)) {
-					graph.add(i, j, ModifierSwap.id);
-					//System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
+				else {// 2 keyphrases and different language
+					if (eu.fbk.hlt.nlp.criteria.Translation.evaluate(kx_i, kx_j)) {
+						graph.add(i, j, eu.fbk.hlt.nlp.criteria.Translation.id);
+						//System.out.println("Article:" + kx_i.getText() + "\t" + kx_j.getText());
+					}
 				}
-				// apply the Singular/Plural criteria
-				else if (SingularPlural.evaluate(kx_i, kx_j)) {
-					graph.add(i, j, SingularPlural.id);
-					//System.out.println("SingularPlural:" + kx_i.getText() + "\t" + kx_j.getText());
-				}
-				// apply the Singular/Plural criteria
-				else if (PrepositionalVariant.evaluate(kx_i, kx_j)) {
-					graph.add(i, j, PrepositionalVariant.id);
-					//System.out.println("PrepositionalVariant:" + kx_i.getText() + "\t" + kx_j.getText());
-				}
-				// apply the Synonym criteria
-				else if (Synonym.evaluate(kx_i, kx_j, keys)) {
-					graph.add(i, j, Synonym.id);
-					//System.out.println("Synonym:" + kx_i.getText() + "\t" + kx_j.getText());
-				}
-				// apply the Synonym criteria
-				else if (Article.evaluate(kx_i, kx_j, keys)) {
-					graph.add(i, j, Article.id);
-					//System.out.println("Article:" + kx_i.getText() + "\t" + kx_j.getText());
-				}
+				
 			}
 
 		}

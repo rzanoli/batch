@@ -11,6 +11,6 @@ package eu.fbk.hlt.nlp.criteria;
 * @author zanoli
 *
 */
-public class ModifierSwap extends AbstractModifierSwap {
-
+public class Translation extends AbstractTranslation {
+	
 }
