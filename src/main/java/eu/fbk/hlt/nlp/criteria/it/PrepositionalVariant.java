@@ -31,7 +31,7 @@ import eu.fbk.hlt.nlp.criteria.AbstractPrepositionalVariant;
 public class PrepositionalVariant extends AbstractPrepositionalVariant {
 
 	// language
-	public static final Language language = Language.IT;
+	public static final Language.VALUE language = Language.VALUE.IT;
 	
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?

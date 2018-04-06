@@ -2,7 +2,6 @@ package eu.fbk.hlt.nlp.cluster;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,7 +47,7 @@ public class Keyphrase {
 	// number of prepositions in the keyphrase
 	private int prepositionsOccurrences;
 	// the keyphrase language
-	private Language language;
+	private Language.VALUE language;
 	// babelnet synsets
 	private List<String> babelnetSynsets;
 
@@ -79,7 +78,7 @@ public class Keyphrase {
 	 * The constructor
 	 * 
 	 */
-	public Keyphrase(int size, Language language) {
+	public Keyphrase(int size, Language.VALUE language) {
 
 		this.tokens = new Token[size];
 		//this.id = "";
@@ -118,7 +117,7 @@ public class Keyphrase {
 	 * 
 	 * @return the language
 	 */
-	public Language getLanguage() {
+	public Language.VALUE getLanguage() {
 		
 		return this.language;
 		
@@ -177,7 +176,7 @@ public class Keyphrase {
 		// set the head of the keyphrase
 		//
 		// Italian language: the first noun of the keyphrase is the head
-		if (this.language == Language.IT) {
+		if (this.language == Language.VALUE.IT) {
 			if (this.writableHead == true) {
 				if (token.getPoS() != null &&
 					token.getPoS().startsWith("S")) {
@@ -190,7 +189,7 @@ public class Keyphrase {
 		}
 		// German language: the last noun of the keyphrase before the first preposition if present
 		// otherwise the last noun is the head;
-		else if(this.language == Language.DE) {
+		else if(this.language == Language.VALUE.DE) {
 			if (this.writableHead == true) {
 				if (token.getPoS() != null) {
 					if (token.getPoS().startsWith("AP")) { //AP: preposition
@@ -204,12 +203,43 @@ public class Keyphrase {
 				}
 			}
 		}
+		// German language: the last noun of the keyphrase before the first preposition if present
+		// otherwise the last noun is the head;
+		else if(this.language == Language.VALUE.EN) {
+			if (this.writableHead == true) {
+				if (token.getPoS() != null) {
+					if (token.getPoS().startsWith("PR")) { //AP: preposition
+						this.writableHead = false;
+					}
+					else if (token.getPoS().startsWith("N")) { //N: noun
+						this.head = token.getForm();
+						//System.out.println(head);
+						this.headPosition = index;
+					}
+				}
+			}
+		}
 		
-		if (token.isAbbreviation())
-			this.abbreviationsOccurrences++;
+		if (this.language == Language.VALUE.IT) {
+			if (token.isAbbreviation())
+				this.abbreviationsOccurrences++;
+			else if (token.getPoS().startsWith("E"))
+				this.prepositionsOccurrences++;
+		}
+		else if (this.language == Language.VALUE.DE) {
+			if (token.isAbbreviation())
+				this.abbreviationsOccurrences++;
+			else if (token.getPoS().startsWith("AP"))
+				this.prepositionsOccurrences++;
+		}
+		else if (this.language == Language.VALUE.EN) {
+			if (token.isAbbreviation())
+				this.abbreviationsOccurrences++;
+			else if (token.getPoS().startsWith("PR"))
+				this.prepositionsOccurrences++;
+		}
 		
-		else if (token.getPoS().startsWith("E"))
-			this.prepositionsOccurrences++;
+		
 		//id = id + "_" + token.getForm().toLowerCase();
 		//if (token.getText().toLowerCase().equals("allarme") || token.getText().toLowerCase().equals("sec"))
 			//System.out.println(id);

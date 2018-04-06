@@ -25,7 +25,7 @@ public class Synonymy extends AbstractSynonymy {
 	// version
 	public static final String version = "1.2";
 	// language
-	public static final Language language = Language.IT;
+	public static final Language.VALUE language = Language.VALUE.IT;
 	
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
@@ -50,7 +50,7 @@ public class Synonymy extends AbstractSynonymy {
 			if (key1.get(i).getForm().equals(key2.get(i).getForm())) {
 			}
 			else if (key1.get(i).getPoS().equals(key2.get(i).getPoS()) &&
-					keys.synonyms(key1.get(i), key2.get(i))) {
+					keys.synonyms_IT(key1.get(i), key2.get(i))) {
 				synonymsCount++;
 			}
 			else

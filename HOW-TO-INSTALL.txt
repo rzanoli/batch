@@ -1,0 +1,6 @@
+1) get the babelnet mvn project and install it in your ./m2 local maven repository
+	1a) get babelnet
+	1b) mvn validate
+	1c) mvn install
+	
+2) mvn package

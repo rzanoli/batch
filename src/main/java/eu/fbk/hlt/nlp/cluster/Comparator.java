@@ -71,7 +71,7 @@ public class Comparator implements Runnable {
 					continue;
 
 				Keyphrase kx_i = keys.get(i);
-				Keyphrase kx_j = keys.get(j);
+				Keyphrase kx_j = keys.get(j); 
 
 				/*
 				// apply the Equality criteria
@@ -85,7 +85,7 @@ public class Comparator implements Runnable {
 				// 2 keyphrases and same language
 				if (kx_i.getLanguage() == kx_j.getLanguage()) {
 					// language: IT
-					if (kx_i.getLanguage() == Language.IT) {
+					if (kx_i.getLanguage() == Language.VALUE.IT) {
 						
 						// apply the Abbreviation criteria
 						if (eu.fbk.hlt.nlp.criteria.Abbreviation.evaluate(kx_i, kx_j)) {
@@ -133,7 +133,7 @@ public class Comparator implements Runnable {
 						}
 					}
 					// language: DE
-					else if (kx_i.getLanguage() == Language.DE) {
+					else if (kx_i.getLanguage() == Language.VALUE.DE) {
 						
 						// apply the Abbreviation criteria
 						if (eu.fbk.hlt.nlp.criteria.Abbreviation.evaluate(kx_i, kx_j)) {
@@ -177,7 +177,42 @@ public class Comparator implements Runnable {
 						
 					}
 					// language: EN
-					else if (kx_i.getLanguage() == Language.EN) {
+					else if (kx_i.getLanguage() == Language.VALUE.EN) {
+						
+						// apply the Abbreviation criteria
+						if (eu.fbk.hlt.nlp.criteria.Abbreviation.evaluate(kx_i, kx_j)) {
+							// if (kxs.inDocument(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.Abbreviation.id);
+							//System.out.println("Abbreviation:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						/*
+						// apply the Acronym criteria
+						else if (eu.fbk.hlt.nlp.criteria.it.Acronym.evaluate(kx_i, kx_j)) {
+							//if (keys.inDocument(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.it.Acronym.id);
+							//System.out.println("Acronym:" + kx_i.getText() + "\t" + kx_j.getText());
+							//}
+						}*/
+						// apply the Entailment criteria
+						else if (eu.fbk.hlt.nlp.criteria.Entailment.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.Entailment.id);
+							//System.out.println("Entailment:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Modifier Swap criteria
+						else if (eu.fbk.hlt.nlp.criteria.ModifierSwap.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.ModifierSwap.id);
+							//System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Singular/Plural criteria
+						else if (eu.fbk.hlt.nlp.criteria.en.SingularPlural.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.en.SingularPlural.id);
+							//System.out.println("SingularPlural:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
+						// apply the Singular/Plural criteria
+						else if (eu.fbk.hlt.nlp.criteria.en.PrepositionalVariant.evaluate(kx_i, kx_j)) {
+							graph.add(i, j, eu.fbk.hlt.nlp.criteria.en.PrepositionalVariant.id);
+							//System.out.println("PrepositionalVariant:" + kx_i.getText() + "\t" + kx_j.getText());
+						}
 						
 					}
 					

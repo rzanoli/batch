@@ -440,7 +440,7 @@ public class Runner {
 		StringBuilder out = new StringBuilder();
 		int nNodes = 0;
 		String[] splitGraphs = graphs.split("\n");
-		int root = -1;
+		//int root = -1;
 		for (int i = 0; i <= splitGraphs.length; i++) {
 			// System.out.println("======" + splitGraphs[i]);
 			if (i == splitGraphs.length || splitGraphs[i].equals("")) {

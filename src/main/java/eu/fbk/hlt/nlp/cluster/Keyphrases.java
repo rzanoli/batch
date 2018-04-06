@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,7 +35,9 @@ public class Keyphrases {
 	// the list of unique keyphrases
 	private List<Keyphrase> innerList;
 
-	private static Map<String, HashSet<String>> synonymsList;
+	// MultiWordNet synonyms list
+	private static Map<String, HashSet<String>> synonymsList_IT; //IT
+	private static Map<String, HashSet<String>> synonymsList_EN; //EN
 
 	// it is used by the Comparator class to move to the next keyphrase to compare
 	public int cursor;
@@ -61,8 +62,8 @@ public class Keyphrases {
 		this.masterList = new LinkedHashMap<Keyphrase, Set<String>>();
 		this.innerList = new ArrayList<Keyphrase>();
 		this.offset = 0;
-		synonymsList = new HashMap<String, HashSet<String>>();
-		loadSynonymsIT();
+		synonymsList_IT = loadSynonyms("/it_syn_list.txt"); // IT
+		synonymsList_EN = loadSynonyms("/en_syn_list.txt"); // EN
 		bn = new BabelnetWrapper();
 
 	}
@@ -112,13 +113,14 @@ public class Keyphrases {
 			Set<String> ids = new TreeSet<String>();
 			ids.add(id);
 			
+			// add the babelnet synsets
 			if (addBabelnetSynsets == true) {
 				//System.out.println((new Date()).getTime());
 				// add babelnet synsets
-				List<Language> targetLanguages = new ArrayList<Language>();
-				targetLanguages.add(Language.IT);
-				targetLanguages.add(Language.DE);
-				targetLanguages.add(Language.EN);
+				List<Language.VALUE> targetLanguages = new ArrayList<Language.VALUE>();
+				targetLanguages.add(Language.VALUE.IT);
+				targetLanguages.add(Language.VALUE.DE);
+				targetLanguages.add(Language.VALUE.EN);
 				List<String> babelnetSynsets = this.getSynsets(kx.getText(), kx.getLanguage(), targetLanguages);
 				for (String synset : babelnetSynsets)
 					kx.addbabelnetSynset(synset);
@@ -260,7 +262,8 @@ public class Keyphrases {
 					String form = token.getForm();
 					String lemma = token.getLemma();
 					String PoS = token.getPoS();
-					bw.write(form + "_#_" + PoS + "_#_" + lemma);
+					String wordnetPoS = token.getWordNetPoS();
+					bw.write(form + "_#_" + PoS + "_#_" + lemma + "_#_" + wordnetPoS);
 					if (i < tokens.length - 1)
 						bw.write(" ");
 				}
@@ -320,14 +323,14 @@ public class Keyphrases {
 				
 				String languageString = splitLine[1];
 				// set the language of the keyphrases
-				Language language = null;
+				Language.VALUE language = null;
 				if (languageString.equals("IT"))
-					language = Language.IT;
+					language = Language.VALUE.IT;
 				else if (languageString.equals("DE"))
-					language = Language.DE;
-				else if (languageString.indexOf("EN") != -1)
-					language = Language.EN;
-					
+					language = Language.VALUE.DE;
+				else if (languageString.equals("EN"))
+					language = Language.VALUE.EN;
+				
 				// set form, pos and lemma
 				String[] tokens = splitLine[2].split(" ");
 				Keyphrase kx = new Keyphrase(tokens.length, language);
@@ -336,7 +339,8 @@ public class Keyphrases {
 					String form = token_i[0];
 					String PoS = token_i[1];
 					String lemma = token_i[2];
-					Token token = new Token(form, PoS, lemma);
+					String wordnetPoS = token_i[3];
+					Token token = new Token(form, PoS, lemma, wordnetPoS);
 					kx.add(i, token);
 				}
 				
@@ -368,14 +372,16 @@ public class Keyphrases {
 	 * 
 	 */
 
-	private void loadSynonymsIT() throws Exception {
+	private Map<String, HashSet<String>> loadSynonyms(String fileName) throws Exception {
 
+		Map<String, HashSet<String>> result = new HashMap<String, HashSet<String>>();
+		
 		BufferedReader br = null;
 
 		try {
 
 			br = new BufferedReader(
-					new InputStreamReader(getClass().getResourceAsStream("/italian_syn_list.txt"), "UTF-8"));
+					new InputStreamReader(getClass().getResourceAsStream(fileName), "UTF-8"));
 
 			String line;
 
@@ -411,14 +417,14 @@ public class Keyphrases {
 						if (j == i)
 							continue;
 						
-						if (synonymsList.containsKey(synsetPoS + "#" + root_i)) {
-							HashSet<String> entries = synonymsList.get(synsetPoS + "#" + root_i);
+						if (result.containsKey(synsetPoS + "#" + root_i)) {
+							HashSet<String> entries = result.get(synsetPoS + "#" + root_i);
 							entries.add(synsetPoS + "#" + word_i);
 						} else {
 							HashSet<String> entries = new HashSet<String>();
 							entries.add(synsetPoS + "#" + word_i);
 							//System.out.println(synsetPoS + "#" + word_i + "\t" + synsetIdList);
-							synonymsList.put(synsetPoS + "#" + root_i, entries);
+							result.put(synsetPoS + "#" + root_i, entries);
 							//System.out.println(synsetPoS + "#" + word_i + "\t" + synsetId);
 						}
 						
@@ -432,6 +438,8 @@ public class Keyphrases {
 				br.close();
 
 		}
+		
+		return result;
 
 	}
 	
@@ -448,13 +456,13 @@ public class Keyphrases {
 	 * @param targetLanguage
 	 * @return
 	 */
-	private List<String> getSynsets(String key, Language sourceLanguage, List<Language> targetLanguages) {
+	private List<String> getSynsets(String key, Language.VALUE sourceLanguage, List<Language.VALUE> targetLanguages) {
 		
 		List<String> result = null;
 		
 		String source = sourceLanguage.toString();
 		List<String> target = new ArrayList<String>();
-		for (Language language : targetLanguages)
+		for (Language.VALUE language : targetLanguages)
 			target.add(language.toString());
 		
 		result = bn.getSynsets(key, source, target);
@@ -473,14 +481,33 @@ public class Keyphrases {
 	 * 
 	 * @return true if they are synonyms; false otherwise
 	 */
-	public boolean synonyms(Token token1, Token token2) {
+	public boolean synonyms_IT(Token token1, Token token2) {
 
-		if (!synonymsList.containsKey(token1.getWordnetAnnotation()) || 
-				!synonymsList.containsKey(token2.getWordnetAnnotation()))
+		if (!synonymsList_IT.containsKey(token1.getWordNetPoSAndLemma()) || 
+				!synonymsList_IT.containsKey(token2.getWordNetPoSAndLemma()))
 			return false;
 		
 		return
-			synonymsList.get(token1.getWordnetAnnotation()).contains(token2.getWordnetAnnotation());
+			synonymsList_IT.get(token1.getWordNetPoSAndLemma()).contains(token2.getWordNetPoSAndLemma());
+
+	}
+	
+	/**
+	 * Say if 2 tokens are synonyms
+	 * 
+	 * @param token1
+	 * @param token2
+	 * 
+	 * @return true if they are synonyms; false otherwise
+	 */
+	public boolean synonyms_EN(Token token1, Token token2) {
+
+		if (!synonymsList_EN.containsKey(token1.getWordNetPoSAndLemma()) || 
+				!synonymsList_EN.containsKey(token2.getWordNetPoSAndLemma()))
+			return false;
+		
+		return
+			synonymsList_EN.get(token1.getWordNetPoSAndLemma()).contains(token2.getWordNetPoSAndLemma());
 
 	}
 
@@ -626,13 +653,13 @@ public class Keyphrases {
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
 			
 			// set the language of the keyphrases
-			Language language = null;
+			Language.VALUE language = null;
 			if (file.getName().indexOf("IT") != -1)
-				language = Language.IT;
+				language = Language.VALUE.IT;
 			else if (file.getName().indexOf("DE") != -1)
-				language = Language.DE;
+				language = Language.VALUE.DE;
 			else if (file.getName().indexOf("EN") != -1)
-				language = Language.EN;
+				language = Language.VALUE.EN;
 
 			List<Token> tokenBuffer = new ArrayList<Token>();
 
@@ -650,7 +677,9 @@ public class Keyphrases {
 						boolean containsName = false;
 						for (int i = 0; i < tokenBuffer.size(); i++) {
 							keyphrase.add(i, tokenBuffer.get(i));
-							if (tokenBuffer.get(i).getPoS().startsWith("S"))
+							if (language == Language.VALUE.IT && tokenBuffer.get(i).getPoS().startsWith("S") ||
+									((language == Language.VALUE.DE || language == Language.VALUE.EN) && 
+											tokenBuffer.get(i).getPoS().startsWith("N")))
 								containsName = true;
 						}
 						if (containsName == true) {
@@ -666,7 +695,8 @@ public class Keyphrases {
 						boolean containsName = false;
 						for (int i = 0; i < tokenBuffer.size(); i++) {
 							keyphrase.add(i, tokenBuffer.get(i));
-							if (tokenBuffer.get(i).getPoS().startsWith("S"))
+							if (language == Language.VALUE.IT && tokenBuffer.get(i).getPoS().startsWith("S") ||
+									((language == Language.VALUE.DE || language == Language.VALUE.EN) && tokenBuffer.get(i).getPoS().startsWith("N")))
 								containsName = true;
 						}
 						if (containsName == true) {
@@ -679,14 +709,18 @@ public class Keyphrases {
 					String form = splitLine[0];
 					String PoS = splitLine[1];
 					String lemma = splitLine[2];
-					Token token = new Token(form, PoS, lemma);
+					// set the WordNet PoS
+					String wordnetPoS = Language.GET_WORDNET_POS(PoS, language);
+					Token token = new Token(form, PoS, lemma, wordnetPoS);
 					tokenBuffer.add(token);
 					// System.out.println("token buffer:" + tokenBuffer.size());
 				} else { // tag: I
-					String form = splitLine[0];
+					String form = splitLine[0]; 
 					String PoS = splitLine[1];
 					String lemma = splitLine[2];
-					Token token = new Token(form, PoS, lemma);
+					// set the WordNet PoS
+					String wordnetPoS = Language.GET_WORDNET_POS(PoS, language);
+					Token token = new Token(form, PoS, lemma, wordnetPoS);
 					tokenBuffer.add(token);
 					// System.out.println("token buffer:" + tokenBuffer.size());
 				}

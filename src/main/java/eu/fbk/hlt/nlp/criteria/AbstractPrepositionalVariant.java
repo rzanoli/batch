@@ -10,7 +10,7 @@ import eu.fbk.hlt.nlp.cluster.Keyphrase;
  *
  */
 public class AbstractPrepositionalVariant {
-
+	
 	// the criteria id
 	public static final int id = 1;
 	// the criteria description

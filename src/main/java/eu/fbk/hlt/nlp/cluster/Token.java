@@ -15,8 +15,11 @@ public class Token {
 	private String form;
 	// the part-of-speech
 	private String PoS;
-	// the wordnet PoS
-	private String wordnetAnnotation;
+	// the wordnet PoS and Lemma
+	private String wordnetPoS;
+		// the lemma
+	// the wordnet PoS and Lemma; it is used to access MultiWordNet
+	private String wordnetPoSAndLemma;
 	// the lemma
 	private String lemma;
 	// the number of its characters
@@ -31,16 +34,27 @@ public class Token {
 	// any token which has two or more dots e.g. (S.r.l.)
 	private boolean isAcronym;
 
-	public Token(String form, String PoS, String lemma) {
+	/**
+	 * 
+	 * The constructor
+	 * 
+	 * @param form the form of the token
+	 * @param PoS the PoS of the token
+	 * @param lemma the lemma of the token
+	 * @param wordnetPoS the wordent PoS of the token
+	 */
+	public Token(String form, String PoS, String lemma, String wordnetPoS) {
 
 		this.form = form.toLowerCase();
 		this.PoS = PoS;
 		this.lemma = lemma;
+		this.wordnetPoS = wordnetPoS;
+		this.wordnetPoSAndLemma = wordnetPoS + "#" + lemma;
 
 		// compute the length of the token ('.' are not considered)
 		// is abbreviation
 		// is acronym
-		int capitalizedLetters = 0;
+		// int capitalizedLetters = 0;
 		int dots = 0;
 		for (int i = 0; i < form.length(); i++) {
 			if (form.charAt(i) != '.') {
@@ -48,23 +62,14 @@ public class Token {
 			} else
 				dots++;
 		}
-		if ((dots >= 2 || this.characters >= 2) &&
-				(this.PoS.equals("SS") || this.PoS.equals("SP") || this.PoS.equals("SPN") || 
-						this.PoS.equals("YA") || this.PoS.equals("YF")))
+
+		// set if acronym or abbreviation
+		if ((dots >= 2 || this.characters >= 2) && 
+				this.wordnetPoS != null && this.wordnetPoS.equals("n"))
 			this.isAcronym = true;
 		else if (dots == 1 && this.characters >= 1)
 			this.isAbbreviation = true;
-		
-		// assign the wordnet PoS
-		if (this.PoS.startsWith("S") || this.PoS.startsWith("Y")) //- n (noun): SS,SP,SN,SPN,YA,YF
-			this.wordnetAnnotation = "n#" + this.lemma.toLowerCase();
-		else if (this.PoS.startsWith("V")) //- v (verb): VI,VI+E,VIY,VIY+E,VF,VF+E,VFY,VFY+E,VSP,VSP+E,VSPY,VSPY+E,VPP,VPP+E,VPPY,VPPY+E,VG,VG+E,VGY,VGY+E,VM,VM+E,VMY,VMY+E
-			this.wordnetAnnotation = "v#" + this.lemma.toLowerCase();
-		else if (this.PoS.startsWith("A") || this.PoS.startsWith("D")) // - a (adjective): AS,AP,AN,DS,DP,DN  
-			this.wordnetAnnotation = "a#" + this.lemma.toLowerCase();
-		else if (this.PoS.startsWith("B")) // - r (adverb): B
-			this.wordnetAnnotation = "r#" + this.lemma.toLowerCase();
-		
+
 	}
 
 	/**
@@ -101,13 +106,24 @@ public class Token {
 	}
 	
 	/**
-	 * Get the Wordnet part-of-speech of the token
+	 * Get the WordNet part-of-speech of the token
 	 * 
 	 * @return
 	 */
-	public String getWordnetAnnotation() {
+	public String getWordNetPoS() {
 
-		return this.wordnetAnnotation;
+		return this.wordnetPoS;
+
+	}
+
+	/**
+	 * Get the WordNet part-of-speech and the lemma of the token
+	 * 
+	 * @return
+	 */
+	public String getWordNetPoSAndLemma() {
+
+		return this.wordnetPoSAndLemma;
 
 	}
 
@@ -199,7 +215,7 @@ public class Token {
 	 * 
 	 * @param token
 	 *            the token to compare with the given token
-	 *            
+	 * 
 	 * @return if the 2 tokens have the same lemma
 	 */
 	public boolean equalsLemma2(Token token) {
@@ -214,23 +230,22 @@ public class Token {
 	 * 
 	 * @param token
 	 *            the token to compare with the given token
-	 *            
+	 * 
 	 * @return if the 2 tokens have the same form
 	 */
 	public boolean equalsForm2(Token token) {
 
-		return this.characters == token.characters && 
-				this.form.equals(token.form);
+		return this.characters == token.characters && this.form.equals(token.form);
 
 	}
-	
+
 	/**
 	 * Return true if the current token and the given token have the same form;
 	 * false otherwise
 	 * 
 	 * @param token
 	 *            the token to compare with the given token
-	 *            
+	 * 
 	 * @return if the 2 tokens have the same form
 	 */
 	public boolean equalsPoS22(Token token) {
@@ -239,9 +254,9 @@ public class Token {
 
 	}
 
-
 	/**
-	 * If the current token is equal (they have the same form and PoS) to the token in input
+	 * If the current token is equal (they have the same form and PoS) to the token
+	 * in input
 	 * 
 	 * @param token
 	 * 
@@ -256,7 +271,7 @@ public class Token {
 		if (obj == this)
 			return true;
 
-		return this.characters == ((Token) obj).characters && 
+		return this.characters == ((Token) obj).characters &&
 				this.form.equals(((Token) obj).form) && this.PoS.equals(((Token) obj).PoS);
 
 	}

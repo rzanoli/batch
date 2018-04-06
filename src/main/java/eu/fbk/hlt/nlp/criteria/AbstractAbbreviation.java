@@ -32,7 +32,7 @@ public abstract class AbstractAbbreviation {
 	// version
 	public static final String version = "1.2"; // IT
 	// language
-	public static final Language language = Language.MULTILINGUAL;
+	public static final Language.VALUE language = Language.VALUE.MULTILINGUAL;
 
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
