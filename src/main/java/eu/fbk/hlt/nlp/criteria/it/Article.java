@@ -28,7 +28,7 @@ public class Article extends AbstractArticle {
 	// version
 	public static final String version = "1.2";
 	// language
-	public static final Language.VALUE language = Language.VALUE.IT;
+	public static final Language language = Language.IT;
 	
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
@@ -40,7 +40,7 @@ public class Article extends AbstractArticle {
 	 * 
 	 * @return if key2 can be derived from key1
 	 */
-	public static boolean evaluate(Keyphrase key1, Keyphrase key2, Keyphrases keys) {
+	public static boolean evaluate(Keyphrase key1, Keyphrase key2) {
 
 		if (key1.length() != key2.length()) {
 			return false;
@@ -50,12 +50,16 @@ public class Article extends AbstractArticle {
 		for (int i = 0; i < key1.length(); i++) {
 
 			if (key1.get(i).getForm().equals(key2.get(i).getForm())) {
+				
 			} else if ((key1.get(i).getPoS().equals("E")
 					&& (key2.get(i).getPoS().equals("ES") || key2.get(i).getPoS().equals("EP"))
+					&& key2.get(i).getLemma().indexOf("/det") != -1
 					&& key1.get(i).getLemma()
 							.equals(key2.get(i).getLemma().substring(0, key2.get(i).getLemma().indexOf("/det"))))
 					|| ((key1.get(i).getPoS().equals("ES") || key1.get(i).getPoS().equals("EP"))
-							&& key2.get(i).getPoS().equals("E") && key2.get(i).getLemma().equals(
+							&& key2.get(i).getPoS().equals("E") 
+							&& key1.get(i).getLemma().indexOf("/det") != -1
+							&& key2.get(i).getLemma().equals(
 									key1.get(i).getLemma().substring(0, key1.get(i).getLemma().indexOf("/det")))))
 				articlesCount++;
 			else {

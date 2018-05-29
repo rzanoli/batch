@@ -25,7 +25,7 @@ public class Synonymy extends AbstractSynonymy {
 	// version
 	public static final String version = "1.2";
 	// language
-	public static final Language.VALUE language = Language.VALUE.IT;
+	public static final Language language = Language.IT;
 	
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?

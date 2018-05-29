@@ -19,6 +19,7 @@ import eu.fbk.hlt.nlp.criteria.Acronym;
 import eu.fbk.hlt.nlp.criteria.it.Article;
 import eu.fbk.hlt.nlp.criteria.Entailment;
 import eu.fbk.hlt.nlp.criteria.ModifierSwap;
+import eu.fbk.hlt.nlp.criteria.Translation;
 import eu.fbk.hlt.nlp.criteria.it.PrepositionalVariant;
 import eu.fbk.hlt.nlp.criteria.it.SingularPlural;
 import eu.fbk.hlt.nlp.criteria.it.Synonymy;
@@ -37,6 +38,7 @@ public class Graph {
 	private int v; // no of vertices in a graph
 	private Vector<int[]>[] adj; // array of linked list for adjacency list representation
 	// private Vector<Integer>[] adj;
+	//private Keyphrases keyphrases;
 
 	/**
 	 * The constructor
@@ -47,6 +49,8 @@ public class Graph {
 	@SuppressWarnings("unchecked")
 	public Graph(int v) {
 
+		//this.keyphrases = keyphrases;
+		
 		this.v = v;
 		adj = new Vector[v];
 		for (int i = 0; i < v; i++) {
@@ -196,7 +200,22 @@ public class Graph {
 				// System.out.println();
 		} // end of outer while loop
 
-		// return the vertices and the edges among them
+		/*
+		if (vertices.toString().split("\n").length > 100) {
+			String[] verticesArray = vertices.toString().split("\n");
+			for (int i = 0; i < verticesArray.length; i++) {
+				if (verticesArray[i].indexOf(" ") != -1)
+					System.out.println("vertice:" + verticesArray[i].split(" ")[0] + "\t" + keyphrases.get(Integer.parseInt(verticesArray[i].split(" ")[0])).getText() + "\t1");
+				else
+					System.out.println("vertice:" + verticesArray[i] + ":" + keyphrases.get(Integer.parseInt(verticesArray[i])).getText());
+			}
+			System.out.println("--------------------------------------");
+			System.out.println(edges);
+			System.out.println("======================================");
+			System.exit(0);
+		}*/
+			
+ 		// return the vertices and the edges among them
 		return vertices.toString() + edges.toString();
 
 	}
@@ -226,6 +245,17 @@ public class Graph {
 				String graph_i = BFSUtil(i, visited);
 				//System.out.println(graph_i);
 				//System.out.print(i + " ");
+				/*
+				Iterator<Integer> it = disconnectedGraphs.keySet().iterator();
+				while(it.hasNext()) {
+					int id = it.next();
+					String tmpGraph = disconnectedGraphs.get(id);
+					if (tmpGraph.equals(graph_i)) {
+						System.err.println(graph_i);
+						System.err.println("============================");
+					}
+				}
+				*/
 				disconnectedGraphs.put(Integer.valueOf(i), graph_i);
 			}
 		}
@@ -372,8 +402,9 @@ public class Graph {
 		int modifierswap = 0;
 		int singularplural = 0;
 		int synonymy = 0;
-		int equality = 0;
+		//int equality = 0;
 		int article = 0;
+		int translation = 0;
 		Map<Integer, Integer> nodeDistribution = new TreeMap<Integer, Integer>();
 		for (int i = 0; i < splitGraphs.length; i++) {
 			String[] splitLine = splitGraphs[i].split(" ");
@@ -409,6 +440,8 @@ public class Graph {
 					synonymy++;
 				else if (Integer.parseInt(splitLine[2]) == Article.id)
 					article++;
+				else if (Integer.parseInt(splitLine[2]) == Translation.id)
+					translation++;
 			}
 		}
 		if (nodeDistribution.containsKey(nNodes)) {
@@ -421,11 +454,11 @@ public class Graph {
 		result.append("#Graphs (clusters) produced: " + nRoots + "\n");
 		result.append("#Vertices: " + nTotNodes + "\n");
 		result.append(
-				"#Edges: " + (article + prepositionalVariant + abbreviation + acronym + entailment + modifierswap + singularplural + synonymy + equality)
+				"#Edges: " + (article + prepositionalVariant + abbreviation + acronym + entailment + modifierswap + singularplural + synonymy + translation)
 						+ " (article:" + article + " abbreviation:" + abbreviation + " " + "acronym:" + acronym
 						+ " entailment:" + entailment + " modifier swap:" + modifierswap + " singular/plural:"
 						+ singularplural + " synonym:" + synonymy + " prepositional variant:" + prepositionalVariant 
-						+ "equality:" + equality + ")" + "\n");
+						+ " translation:" + translation + ")" + "\n");
 
 		result.append("\nDistribution (#Graphs, #Vertices):\n");
 		Iterator<Integer> it = nodeDistribution.keySet().iterator();
@@ -439,6 +472,7 @@ public class Graph {
 
 	}
 
+	/*
 	public static void main(String[] args) {
 
 		Graph g = new Graph(5);
@@ -455,5 +489,5 @@ public class Graph {
 		// System.out.println("========================");
 		String graphsString = g.BFS(0);
 		System.out.println(graphsString);
-	}
+	}*/
 }

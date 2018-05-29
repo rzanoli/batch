@@ -94,22 +94,22 @@ public class Launcher {
 					String[] str1Tokens = str1.split(" ");
 					String[] str2Tokens = str2.split(" ");
 	
-					Keyphrase key1 = new Keyphrase(str1Tokens.length, Language.VALUE.IT);
+					Keyphrase key1 = new Keyphrase(str1Tokens.length, Language.IT);
 					for (int i = 0; i < str1Tokens.length; i++) {
 						String form = str1Tokens[i].split("\\|")[0];
 						String PoS = str1Tokens[i].split("\\|")[1];
 						String lemma = str1Tokens[i].split("\\|")[2];
-						String wordnetPoS = Language.GET_WORDNET_POS(PoS, Language.VALUE.IT);
+						String wordnetPoS = Keyphrases.getWordNetPoS(PoS, Language.IT);
 						Token token = new Token(form, PoS, lemma, wordnetPoS);
 						key1.add(i, token);
 					}
 					
-					Keyphrase key2 = new Keyphrase(str2Tokens.length, Language.VALUE.IT);
+					Keyphrase key2 = new Keyphrase(str2Tokens.length, Language.IT);
 					for (int i = 0; i < str2Tokens.length; i++) {
 						String form = str2Tokens[i].split("\\|")[0];
 						String PoS = str2Tokens[i].split("\\|")[1];
 						String lemma = str2Tokens[i].split("\\|")[2];
-						String wordnetPoS = Language.GET_WORDNET_POS(PoS, Language.VALUE.IT);
+						String wordnetPoS = Keyphrases.getWordNetPoS(PoS, Language.IT);
 						Token token = new Token(form, PoS, lemma, wordnetPoS);
 						key2.add(i, token);
 					}

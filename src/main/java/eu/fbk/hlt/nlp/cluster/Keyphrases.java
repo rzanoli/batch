@@ -43,6 +43,14 @@ public class Keyphrases {
 	public int cursor;
 	// the total number of keyphrases including duplicates
 	private int nKeyphrases;
+	// the total number of keyphrases found in Babelnet
+	private static int nITKeyphrasesFoundInBabelnet;
+	private static int nITMonosemicKeyphrasesFoundInBabelnet;
+	private static int nDEKeyphrasesFoundInBabelnet;
+	private static int nDEMonosemicKeyphrasesFoundInBabelnet;
+	private static int nENKeyphrasesFoundInBabelnet;
+	private static int nENMonosemicKeyphrasesFoundInBabelnet;
+	private static int nQueriesInBabelnet;
 	// the offset pointer to the first place in the list after the last keyphrase
 	// it is used for incremental clustering so that
 	// comparators can compare the new keyphrases with the
@@ -53,7 +61,7 @@ public class Keyphrases {
 	// the instantiation of the BabelNet class to one object. You can obtain a reference to the 
 	// only instance of the BabelNet class with the following line
 	private BabelnetWrapper bn;
-
+	
 	/**
 	 * The constructor
 	 */
@@ -117,13 +125,45 @@ public class Keyphrases {
 			if (addBabelnetSynsets == true) {
 				//System.out.println((new Date()).getTime());
 				// add babelnet synsets
-				List<Language.VALUE> targetLanguages = new ArrayList<Language.VALUE>();
-				targetLanguages.add(Language.VALUE.IT);
-				targetLanguages.add(Language.VALUE.DE);
-				targetLanguages.add(Language.VALUE.EN);
+				List<Language> targetLanguages = new ArrayList<Language>();
+				targetLanguages.add(Language.IT);
+				targetLanguages.add(Language.DE);
+				targetLanguages.add(Language.EN); 
+				
 				List<String> babelnetSynsets = this.getSynsets(kx.getText(), kx.getLanguage(), targetLanguages);
-				for (String synset : babelnetSynsets)
+				
+				nQueriesInBabelnet++;
+				if (babelnetSynsets.size() > 0) {
+					if (kx.getLanguage() == Language.IT) {
+						nITKeyphrasesFoundInBabelnet++;
+					}
+					else if (kx.getLanguage() == Language.DE) {
+						nDEKeyphrasesFoundInBabelnet++;
+						//for (String synset : babelnetSynsets)
+							//System.out.println(synset);
+					}
+					else if (kx.getLanguage() == Language.EN)
+						nENKeyphrasesFoundInBabelnet++;
+				}
+				//else 
+					//System.out.println("non trovato");
+					
+				for (String synset : babelnetSynsets) {
 					kx.addbabelnetSynset(synset);
+
+					//System.out.println(synset);
+				}
+					
+				if (kx.getLanguage() == Language.IT && kx.isMonosemic()) {
+					nITMonosemicKeyphrasesFoundInBabelnet++;
+				}
+				else if (kx.getLanguage() == Language.DE && kx.isMonosemic()) {
+					nDEMonosemicKeyphrasesFoundInBabelnet++;
+				}
+				else if (kx.getLanguage() == Language.EN  && kx.isMonosemic()) {
+					nENMonosemicKeyphrasesFoundInBabelnet++;
+				}
+				
 				//System.out.println((new Date()).getTime());
 			}
 			
@@ -138,7 +178,7 @@ public class Keyphrases {
 			//System.out.println("vista");
 			masterList.put(kx, ids);
 		}
-
+		
 	}
 
 	/**
@@ -323,13 +363,13 @@ public class Keyphrases {
 				
 				String languageString = splitLine[1];
 				// set the language of the keyphrases
-				Language.VALUE language = null;
+				Language language = null;
 				if (languageString.equals("IT"))
-					language = Language.VALUE.IT;
+					language = Language.IT;
 				else if (languageString.equals("DE"))
-					language = Language.VALUE.DE;
+					language = Language.DE;
 				else if (languageString.equals("EN"))
-					language = Language.VALUE.EN;
+					language = Language.EN;
 				
 				// set form, pos and lemma
 				String[] tokens = splitLine[2].split(" ");
@@ -379,12 +419,12 @@ public class Keyphrases {
 		BufferedReader br = null;
 
 		try {
-
+			
 			br = new BufferedReader(
 					new InputStreamReader(getClass().getResourceAsStream(fileName), "UTF-8"));
 
 			String line;
-
+            
 			while ((line = br.readLine()) != null) {
 				//System.err.println(line);
 				// e.g., 
@@ -395,7 +435,7 @@ public class Keyphrases {
 				//System.err.println("pippo=================================");
 				//String synsetId = synset.split("#")[1];
 				String synsetPoS = synset.split("#")[0];
-					
+				
 				String synonyms = lineSplit[1].replace("' ", "").replace(" '", "");
 				String[] synonymsSplit = synonyms.split(" ");
 
@@ -456,13 +496,16 @@ public class Keyphrases {
 	 * @param targetLanguage
 	 * @return
 	 */
-	private List<String> getSynsets(String key, Language.VALUE sourceLanguage, List<Language.VALUE> targetLanguages) {
+	private List<String> getSynsets(String key, Language sourceLanguage, List<Language> targetLanguages) {
 		
 		List<String> result = null;
 		
+		//if (1 == 1)
+			//return new ArrayList<String>();
+		
 		String source = sourceLanguage.toString();
 		List<String> target = new ArrayList<String>();
-		for (Language.VALUE language : targetLanguages)
+		for (Language language : targetLanguages)
 			target.add(language.toString());
 		
 		result = bn.getSynsets(key, source, target);
@@ -527,6 +570,11 @@ public class Keyphrases {
 
 		Map<Integer, Integer> lengthDistribution = new TreeMap<Integer, Integer>(); // keywords length occurrences
 		Map<Integer, Integer> documentsDistribution = new TreeMap<Integer, Integer>(); // documents keywords occurrences
+		
+		int nKeyphrasesIT = 0;
+		int nKeyphrasesDE = 0;
+		int nKeyphrasesEN = 0;
+		
 		Iterator<Keyphrase> it = keyphrases.iterator();
 		while (it.hasNext()) {
 
@@ -550,8 +598,19 @@ public class Keyphrases {
 				int value = 1;
 				documentsDistribution.put(nDocuments, value);
 			}
+			
+			Language language = kx.getLanguage();
+			if (language == Language.IT)
+				nKeyphrasesIT++;
+			else if (language == Language.DE)
+				nKeyphrasesDE++;
+			else if (language == Language.EN)
+				nKeyphrasesEN++;
 
 		}
+		
+		result.append("\tIT:" + nKeyphrasesIT + "\tDE:" + nKeyphrasesDE + "\tEN:" + nKeyphrasesEN + "\n\n");
+		result.append("Babelnet queries:" + nQueriesInBabelnet + "\t" + "Found IT:" + nITKeyphrasesFoundInBabelnet + "(" + nITMonosemicKeyphrasesFoundInBabelnet + ")" + "\tDE:" + nDEKeyphrasesFoundInBabelnet + "(" + nDEMonosemicKeyphrasesFoundInBabelnet + ")" + "\tEN:" + nENKeyphrasesFoundInBabelnet + "(" + nDEMonosemicKeyphrasesFoundInBabelnet + ")" + "\n\n");
 
 		result.append("Length distribution (Length, #Occurrences):\n");
 		Iterator<Integer> lengthDistributionIt = lengthDistribution.keySet().iterator();
@@ -568,7 +627,7 @@ public class Keyphrases {
 			int frequency = documentsDistribution.get(number);
 			result.append("\t" + number + "\t" + frequency + "\n");
 		}
-
+		
 		return result.toString();
 
 	}
@@ -588,12 +647,15 @@ public class Keyphrases {
 		// sort the files to be consistent on the different platforms
 		Arrays.sort(files, (f1, f2) -> f1.compareTo(f2));
 
+		//int counter = 0;
 		for (File file : files) {
-
+			//counter++;
 			if (file.isFile()) {
 				// System.out.println(file.getName());
 				// if (file.getName().endsWith(".tsv")) {
-				if (file.getName().endsWith(".iob")) {
+				if (file.getName().endsWith(".iob")
+						//&& file.getName().indexOf("DE") != -1
+						) {
 					// Map<String, Keyphrase> kxs = readKDFiles(file);
 					Map<String, Keyphrase> kxs = readIOBFiles(file);
 					Iterator<String> it = kxs.keySet().iterator();
@@ -653,13 +715,13 @@ public class Keyphrases {
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
 			
 			// set the language of the keyphrases
-			Language.VALUE language = null;
+			Language language = null;
 			if (file.getName().indexOf("IT") != -1)
-				language = Language.VALUE.IT;
+				language = Language.IT;
 			else if (file.getName().indexOf("DE") != -1)
-				language = Language.VALUE.DE;
+				language = Language.DE;
 			else if (file.getName().indexOf("EN") != -1)
-				language = Language.VALUE.EN;
+				language = Language.EN;
 
 			List<Token> tokenBuffer = new ArrayList<Token>();
 
@@ -677,40 +739,67 @@ public class Keyphrases {
 						boolean containsName = false;
 						for (int i = 0; i < tokenBuffer.size(); i++) {
 							keyphrase.add(i, tokenBuffer.get(i));
-							if (language == Language.VALUE.IT && tokenBuffer.get(i).getPoS().startsWith("S") ||
-									((language == Language.VALUE.DE || language == Language.VALUE.EN) && 
+							if (language == Language.IT && tokenBuffer.get(i).getPoS().startsWith("S") ||
+									((language == Language.DE || language == Language.EN) && 
 											tokenBuffer.get(i).getPoS().startsWith("N")))
-								containsName = true;
+							containsName = true;
 						}
+						
+						/*
+						if (keyphrase.getHead() == null) {
+							System.out.println(keyphrase.getLanguage() + "\t" + keyphrase.getText());
+							for (Token token: keyphrase.getTokens()) {
+								System.out.println("\t" + token.getForm() + "\t" + token.getPoS() + "\t" +token.getLemma());
+							}
+							System.out.println("====================================");
+						}
+						//else
+							//System.out.println("trovato:" + keyphrase.getLanguage() + "\t" + keyphrase.getText());
+						*/
+						
 						if (containsName == true) {
 							String kxID = file.getName() + "_" + lineNumber;
+							//if (keyphrase.getHead() == null)
+							//	System.out.println(keyphrase.getText());
 							result.put(kxID, keyphrase);
 						}
+						//else {
+						//	System.out.println(language + " non valida:" + keyphrase.getText());
+						//	for (int i = 0; i < tokenBuffer.size(); i++) {
+						//		System.out.println(tokenBuffer.get(i).getForm() + "\t" + tokenBuffer.get(i).getPoS()); 
+						//	}
+						//}
 						// System.out.println("====================================");
 						tokenBuffer = new ArrayList<Token>();
 					}
 				} else if (kxString.indexOf("B-") != -1) {
 					if (tokenBuffer.size() > 0) {
 						Keyphrase keyphrase = new Keyphrase(tokenBuffer.size(), language);
-						boolean containsName = false;
+						//boolean containsName = false;
 						for (int i = 0; i < tokenBuffer.size(); i++) {
 							keyphrase.add(i, tokenBuffer.get(i));
-							if (language == Language.VALUE.IT && tokenBuffer.get(i).getPoS().startsWith("S") ||
-									((language == Language.VALUE.DE || language == Language.VALUE.EN) && tokenBuffer.get(i).getPoS().startsWith("N")))
-								containsName = true;
+							//if (language == Language.IT && tokenBuffer.get(i).getPoS().startsWith("S") ||
+							//		((language == Language.DE || language == Language.EN) && tokenBuffer.get(i).getPoS().startsWith("N")))
+							//	containsName = true;
 						}
-						if (containsName == true) {
-							String kxID = file.getName() + "_" + lineNumber;
-							result.put(kxID, keyphrase);
-							// System.out.println("====================================");
-							tokenBuffer = new ArrayList<Token>();
-						}
+						//if (containsName == true) {
+						String kxID = file.getName() + "_" + lineNumber;
+						result.put(kxID, keyphrase);
+						// System.out.println("====================================");
+						tokenBuffer = new ArrayList<Token>();
+						//else {
+						//	System.out.println(language + " non valida:" + keyphrase.getText());
+						//	for (int i = 0; i < tokenBuffer.size(); i++) {
+						//		System.out.println(tokenBuffer.get(i).getForm() + "\t" + tokenBuffer.get(i).getPoS()); 
+						//	}
 					}
 					String form = splitLine[0];
 					String PoS = splitLine[1];
 					String lemma = splitLine[2];
+					if (lemma.equals("<unknown>")) // treetagger annotation for DE
+						lemma = form;
 					// set the WordNet PoS
-					String wordnetPoS = Language.GET_WORDNET_POS(PoS, language);
+					String wordnetPoS = getWordNetPoS(PoS, language);
 					Token token = new Token(form, PoS, lemma, wordnetPoS);
 					tokenBuffer.add(token);
 					// System.out.println("token buffer:" + tokenBuffer.size());
@@ -718,8 +807,10 @@ public class Keyphrases {
 					String form = splitLine[0]; 
 					String PoS = splitLine[1];
 					String lemma = splitLine[2];
+					if (lemma.equals("<unknown>")) // treetagger annotation for DE
+						lemma = form;
 					// set the WordNet PoS
-					String wordnetPoS = Language.GET_WORDNET_POS(PoS, language);
+					String wordnetPoS = getWordNetPoS(PoS, language);
 					Token token = new Token(form, PoS, lemma, wordnetPoS);
 					tokenBuffer.add(token);
 					// System.out.println("token buffer:" + tokenBuffer.size());
@@ -736,6 +827,46 @@ public class Keyphrases {
 
 		return result;
 
+	}
+	
+	/**
+	 * Gets the WordNet PoS given a certain PoS produced by one of the used pipeline (e.g., TextPro)
+	 * 
+	 * @param PoS the PoS produced by the pipeline
+	 * @param language the language of the pipeline
+	 * @return the WordNet PoS
+	 */
+	public static String getWordNetPoS(String PoS, Language language) {
+		
+		String result = null;
+		
+		if (language == Language.IT) {
+			if (PoS.startsWith("S") || PoS.startsWith("Y")) //- n (noun): SS,SP,SN,SPN,YA,YF
+				result = "n";
+			else if (PoS.startsWith("V")) //- v (verb): VI,VI+E,VIY,VIY+E,VF,VF+E,VFY,VFY+E,VSP,VSP+E,VSPY,VSPY+E,VPP,VPP+E,VPPY,VPPY+E,VG,VG+E,VGY,VGY+E,VM,VM+E,VMY,VMY+E
+				result = "v";
+			else if (PoS.startsWith("A") || PoS.startsWith("D")) // - a (adjective): AS,AP,AN,DS,DP,DN  
+				result = "a" ;
+			else if (PoS.startsWith("B")) // - r (adverb): B
+				result = "r";
+		}
+		else if (language == Language.DE) {
+		
+		}
+		else if (language == Language.EN) {
+			// assign the wordnet PoS
+			if (PoS.startsWith("N")) //- n (noun): NN0, NN1, NN2, NP0
+				result = "n";
+			else if (PoS.startsWith("V")) // - v (verb):
+				result = "v";
+			else if (PoS.startsWith("AJ")) // - a (adjective): 
+				result = "a";
+			else if (PoS.startsWith("AV")) // - r (adverb):
+				result = "r";
+		}
+		
+		return result;
+		
 	}
 
 }

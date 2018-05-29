@@ -47,7 +47,7 @@ public class Keyphrase {
 	// number of prepositions in the keyphrase
 	private int prepositionsOccurrences;
 	// the keyphrase language
-	private Language.VALUE language;
+	private Language language;
 	// babelnet synsets
 	private List<String> babelnetSynsets;
 
@@ -78,7 +78,7 @@ public class Keyphrase {
 	 * The constructor
 	 * 
 	 */
-	public Keyphrase(int size, Language.VALUE language) {
+	public Keyphrase(int size, Language language) {
 
 		this.tokens = new Token[size];
 		//this.id = "";
@@ -117,7 +117,7 @@ public class Keyphrase {
 	 * 
 	 * @return the language
 	 */
-	public Language.VALUE getLanguage() {
+	public Language getLanguage() {
 		
 		return this.language;
 		
@@ -163,6 +163,20 @@ public class Keyphrase {
 	}
 	
 	/**
+	 * get if the keyphrase is monosemic in Babelnet
+	 * 
+	 * @return true if monosemic; false otherwise
+	 */
+	public boolean isMonosemic() {
+
+		if (this.babelnetSynsets.size() == 1)
+			return true;
+
+		return false;
+
+	}
+	
+	/**
 	 * Add a new token of the keyphrase
 	 * 
 	 * @param token
@@ -176,7 +190,7 @@ public class Keyphrase {
 		// set the head of the keyphrase
 		//
 		// Italian language: the first noun of the keyphrase is the head
-		if (this.language == Language.VALUE.IT) {
+		if (this.language == Language.IT) {
 			if (this.writableHead == true) {
 				if (token.getPoS() != null &&
 					token.getPoS().startsWith("S")) {
@@ -189,10 +203,10 @@ public class Keyphrase {
 		}
 		// German language: the last noun of the keyphrase before the first preposition if present
 		// otherwise the last noun is the head;
-		else if(this.language == Language.VALUE.DE) {
+		else if(this.language == Language.DE) {
 			if (this.writableHead == true) {
 				if (token.getPoS() != null) {
-					if (token.getPoS().startsWith("AP")) { //AP: preposition
+					if (this.head != null && token.getPoS().startsWith("AP")) { //AP: preposition
 						this.writableHead = false;
 					}
 					else if (token.getPoS().startsWith("N")) { //N: noun
@@ -203,9 +217,9 @@ public class Keyphrase {
 				}
 			}
 		}
-		// German language: the last noun of the keyphrase before the first preposition if present
+		// English language: the last noun of the keyphrase before the first preposition if present
 		// otherwise the last noun is the head;
-		else if(this.language == Language.VALUE.EN) {
+		else if(this.language == Language.EN) {
 			if (this.writableHead == true) {
 				if (token.getPoS() != null) {
 					if (token.getPoS().startsWith("PR")) { //AP: preposition
@@ -220,19 +234,19 @@ public class Keyphrase {
 			}
 		}
 		
-		if (this.language == Language.VALUE.IT) {
+		if (this.language == Language.IT) {
 			if (token.isAbbreviation())
 				this.abbreviationsOccurrences++;
 			else if (token.getPoS().startsWith("E"))
 				this.prepositionsOccurrences++;
 		}
-		else if (this.language == Language.VALUE.DE) {
+		else if (this.language == Language.DE) {
 			if (token.isAbbreviation())
 				this.abbreviationsOccurrences++;
 			else if (token.getPoS().startsWith("AP"))
 				this.prepositionsOccurrences++;
 		}
-		else if (this.language == Language.VALUE.EN) {
+		else if (this.language == Language.EN) {
 			if (token.isAbbreviation())
 				this.abbreviationsOccurrences++;
 			else if (token.getPoS().startsWith("PR"))

@@ -2,8 +2,6 @@ package eu.fbk.hlt.nlp.cluster;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
-
 /**
  * This class represents a comparator that compares the keyphrases in input each
  * other and cluster them by building the graph of the edged keyphrases. The
@@ -22,6 +20,7 @@ public class Comparator implements Runnable {
 	private Keyphrases keys;
 	// the graph structure that will contain the edged keyphrases
 	private Graph graph;
+	static int tmp_counter = 0; 
 
 	/**
 	 * The constructor
@@ -85,7 +84,7 @@ public class Comparator implements Runnable {
 				// 2 keyphrases and same language
 				if (kx_i.getLanguage() == kx_j.getLanguage()) {
 					// language: IT
-					if (kx_i.getLanguage() == Language.VALUE.IT) {
+					if (kx_i.getLanguage() == Language.IT) {
 						
 						// apply the Abbreviation criteria
 						if (eu.fbk.hlt.nlp.criteria.Abbreviation.evaluate(kx_i, kx_j)) {
@@ -109,7 +108,7 @@ public class Comparator implements Runnable {
 						// apply the Modifier Swap criteria
 						else if (eu.fbk.hlt.nlp.criteria.ModifierSwap.evaluate(kx_i, kx_j)) {
 							graph.add(i, j, eu.fbk.hlt.nlp.criteria.ModifierSwap.id);
-							//System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
+							//System.out.println("ModifierSwap IT:" + kx_i.getText() + "\t" + kx_j.getText());
 						}
 						// apply the Singular/Plural criteria
 						else if (eu.fbk.hlt.nlp.criteria.it.SingularPlural.evaluate(kx_i, kx_j)) {
@@ -127,13 +126,13 @@ public class Comparator implements Runnable {
 							//System.out.println("Synonym:" + kx_i.getText() + "\t" + kx_j.getText());
 						}
 						// apply the Synonym criteria
-						else if (eu.fbk.hlt.nlp.criteria.it.Article.evaluate(kx_i, kx_j, keys)) {
+						else if (eu.fbk.hlt.nlp.criteria.it.Article.evaluate(kx_i, kx_j)) {
 							graph.add(i, j, eu.fbk.hlt.nlp.criteria.it.Article.id);
 							//System.out.println("Article:" + kx_i.getText() + "\t" + kx_j.getText());
 						}
 					}
 					// language: DE
-					else if (kx_i.getLanguage() == Language.VALUE.DE) {
+					else if (kx_i.getLanguage() == Language.DE) {
 						
 						// apply the Abbreviation criteria
 						if (eu.fbk.hlt.nlp.criteria.Abbreviation.evaluate(kx_i, kx_j)) {
@@ -157,7 +156,7 @@ public class Comparator implements Runnable {
 						// apply the Modifier Swap criteria
 						else if (eu.fbk.hlt.nlp.criteria.ModifierSwap.evaluate(kx_i, kx_j)) {
 							graph.add(i, j, eu.fbk.hlt.nlp.criteria.ModifierSwap.id);
-							//System.out.println("ModifierSwap:" + kx_i.getText() + "\t" + kx_j.getText());
+							//System.out.println("ModifierSwap DE:" + kx_i.getText() + "\t" + kx_j.getText());
 						}
 						// apply the Singular/Plural criteria
 						else if (eu.fbk.hlt.nlp.criteria.de.SingularPlural.evaluate(kx_i, kx_j)) {
@@ -170,14 +169,14 @@ public class Comparator implements Runnable {
 							//System.out.println("PrepositionalVariant:" + kx_i.getText() + "\t" + kx_j.getText());
 						}
 						// apply the Synonym criteria
-						else if (eu.fbk.hlt.nlp.criteria.de.Article.evaluate(kx_i, kx_j, keys)) {
+						else if (eu.fbk.hlt.nlp.criteria.de.Article.evaluate(kx_i, kx_j)) {
 							graph.add(i, j, eu.fbk.hlt.nlp.criteria.de.Article.id);
 							//System.out.println("Article:" + kx_i.getText() + "\t" + kx_j.getText());
 						}
 						
 					}
 					// language: EN
-					else if (kx_i.getLanguage() == Language.VALUE.EN) {
+					else if (kx_i.getLanguage() == Language.EN) {
 						
 						// apply the Abbreviation criteria
 						if (eu.fbk.hlt.nlp.criteria.Abbreviation.evaluate(kx_i, kx_j)) {
@@ -220,7 +219,8 @@ public class Comparator implements Runnable {
 				else {// 2 keyphrases and different language
 					if (eu.fbk.hlt.nlp.criteria.Translation.evaluate(kx_i, kx_j)) {
 						graph.add(i, j, eu.fbk.hlt.nlp.criteria.Translation.id);
-						//System.out.println("Article:" + kx_i.getText() + "\t" + kx_j.getText());
+						tmp_counter++;
+						//System.out.println("Translation:" + kx_i.getText() + "\t" + kx_j.getText());
 					}
 				}
 				

@@ -26,7 +26,7 @@ public class PrepositionalVariant extends AbstractPrepositionalVariant {
 	// version
 	public static final String version = "0.1 ";
 	// language
-	public static final Language.VALUE language = Language.VALUE.EN;
+	public static final Language language = Language.EN;
 	
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?

@@ -25,7 +25,7 @@ public class SingularPlural extends AbstractSingularPlural {
 	// version
 	public static final String version = "0.1";
 	// language
-	public static final Language.VALUE language = Language.VALUE.EN;
+	public static final Language language = Language.EN;
 	
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
@@ -48,8 +48,8 @@ public class SingularPlural extends AbstractSingularPlural {
 			if (key1.get(i).getForm().equals(key2.get(i).getForm())) {
 			}
 			else if (key1.get(i).getLemma().equals(key2.get(i).getLemma()) &&
-						(key1.get(i).getPoS().equals("NN1") && key2.get(i).getPoS().equals("NN2") ||
-						key1.get(i).getPoS().equals("NN2")) && key2.get(i).getPoS().equals("NN1"))
+						((key1.get(i).getPoS().equals("NN1") && key2.get(i).getPoS().equals("NN2")) ||
+						(key1.get(i).getPoS().equals("NN2") && key2.get(i).getPoS().equals("NN1"))))
 				singularPluralCount++;
 			else {
 				return false;

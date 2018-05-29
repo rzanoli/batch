@@ -416,11 +416,13 @@ public class Runner {
 			}
 		}
 		
+		System.out.println("translation counter:" + Comparator.tmp_counter);
+		
 		System.out.println("Documents distriution in clusters");
 		for (Integer freq : documentsDistributionInClusters.keySet()) {
 			System.out.println(freq + "\t" + documentsDistributionInClusters.get(freq));
 		}
-		System.out.println("===================================");
+		//System.out.println("===================================");
 
 	}
 	

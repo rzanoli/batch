@@ -4,3 +4,7 @@
 	1c) mvn install
 	
 2) mvn package
+
+3) copy the produce jar into the work directory
+
+4) copy the directory config into the same working directory (it is used to configure babelnet)

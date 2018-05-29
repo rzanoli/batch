@@ -31,7 +31,7 @@ public class AbstractEntailment {
 	// version
 	public static final String version = "1.2"; // IT
 	// language
-	public static final Language.VALUE language = Language.VALUE.MULTILINGUAL;
+	public static final Language language = Language.MULTILINGUAL;
 
 	/**
 	 * Given a keyphrase key1, can the keyphrase key2 be derived from key1?
@@ -48,6 +48,10 @@ public class AbstractEntailment {
 		if (key1.length() != key2.length() + 1)
 			return false;
 
+		if (key1.getHead() == null || key2.getHead() == null) {
+			return false;
+		}
+		
 		if (!key1.getHead().equals(key2.getHead()))
 			return false;
 
